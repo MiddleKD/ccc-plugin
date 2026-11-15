@@ -158,13 +158,13 @@ cleanup)
   if git -C "$m" worktree list --porcelain | grep -A2 '^worktree' | grep -qx "branch refs/heads/$br"; then
     fail "worktree removed" "a worktree for $br still exists"
   else pass "worktree removed"; fi
+  rec="$(git -C "$m" rev-parse --path-format=absolute --git-common-dir)/ccc/${br//\//_}.json"
   if git -C "$m" rev-parse --verify -q "refs/heads/$br" >/dev/null; then
-    base=$(git -C "$m" merge-base "$br" HEAD 2>/dev/null)
+    base=$(jq -r '.baseCommit // empty' "$rec" 2>/dev/null)
+    [ -n "$base" ] || base=$(git -C "$m" merge-base "$br" HEAD 2>/dev/null)
     if [ "$(git -C "$m" rev-list --count "$base..$br" 2>/dev/null)" -gt 0 ]; then pass "branch $br kept with commits"
     else fail "branch $br" "has no commits beyond its base; the Worker's work was not committed"; fi
-  elif git -C "$m" branch --merged | grep -q " $br\$"; then pass "branch $br merged"
-  else fail "branch $br" "deleted before merge; the deliverable is lost"; fi
-  rec="$(git -C "$m" rev-parse --path-format=absolute --git-common-dir)/ccc/${br//\//_}.json"
+  else fail "branch $br" "deleted; the Worker's commits are the deliverable (delete only after the approver merges it)"; fi
   if [ ! -f "$rec" ]; then
     fail "handoff record" "$rec missing: the Worker was not started through ccc-handoff.sh"
   else
