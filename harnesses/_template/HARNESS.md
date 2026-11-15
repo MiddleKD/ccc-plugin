@@ -11,12 +11,12 @@ One-line summary of what this Harness equips a Worker to do.
 
 Each line: path or name, origin (`authored`, or copied from `<plugin>@<version>`), and which step it serves and why that kind.
 
-- **Enabled Plugins**: `<plugin>@ccc` — <step, reason>
+- **Enabled Plugins**: `<plugin>@ccc` — <step> — <work it does that AGENTS.md alone cannot: a checker, renderer, gate, or decision>
 - **skills/**: `<harness>-<skill>/` — <origin> — <step, reason>
 - **agents/**: `<agent>.md` — <origin> — <step, reason>
 - **workflows/**: `<workflow>.js` — <origin> — <step, reason>
 - **hooks/**: `<hook>` (<event>) — <origin> — <gate it enforces>; env it reads: `<VAR>`
-- **Considered, not used**: `<plugin>:<component>` — <why: missing binary, needs API key, overlaps the chosen one>
+- **Considered, not used**: `<plugin>:<component>` — <why: no unique work here, missing binary, needs API key, overlaps the chosen one>
 
 ## Situations
 

@@ -17,6 +17,10 @@ before=$(cat "$ml" 2>/dev/null || echo '{}')
 
 rc=0
 for p in "$@"; do
+  if jq -e --arg p "$p@" '.enabledPlugins // {} | to_entries | any(.value == true and (.key | startswith($p)))' "$HOME/.claude/settings.json" >/dev/null 2>&1; then
+    echo "skipped $p: already on globally; the Worker sees it without a local install"
+    continue
+  fi
   out=$(cd "$w" && claude plugin install "$p@ccc" --scope local 2>&1) || { echo "$out" | tail -2; rc=1; continue; }
   # Move whichever file got the entry into the worktree file.
   for f in "$ml" "$wl"; do
