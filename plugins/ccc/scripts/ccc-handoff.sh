@@ -13,6 +13,12 @@ br=$(git -C "$w" branch --show-current)
 rec_dir="$(git -C "$w" rev-parse --path-format=absolute --git-common-dir)/ccc"
 rec="$rec_dir/${br//\//_}.json"
 
+ccc_root=$(cd "$here/../../.." && pwd -P)
+wt_main=$(cd "$(git -C "$w" rev-parse --path-format=absolute --git-common-dir)/.." && pwd -P)
+if [ "$wt_main" = "$ccc_root" ]; then
+  echo "handoff refused: $w is a worktree of ccc-plugin itself; the task's project is somewhere else"
+  exit 1
+fi
 gate=$("$here/ccc-gate.sh" init "$w" 2>&1); rc=$?
 echo "$gate"
 if [ $rc -ne 0 ]; then echo "handoff refused: init gates fail"; exit 1; fi

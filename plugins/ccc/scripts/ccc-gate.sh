@@ -115,6 +115,18 @@ init)
   j=$w/.claude/.ccc.json
   if jq -e . "$j" >/dev/null 2>&1; then pass "2 .ccc.json"; else fail "2 .ccc.json" "$j missing or invalid JSON"; fi
 
+  # The worktree must belong to the recorded target, and the target must not be ccc-plugin.
+  wt_main=$(cd "$(git -C "$w" rev-parse --path-format=absolute --git-common-dir)/.." && pwd -P)
+  ccc_root=$(cd "$here/../../.." && pwd -P)
+  tg=$(jq -r '.target // empty' "$j" 2>/dev/null)
+  if [ "$wt_main" = "$ccc_root" ]; then
+    fail "0 target" "this worktree belongs to ccc-plugin ($ccc_root), not the project the task is for; remove it and create it with git -C <target> worktree add"
+  elif [ -z "$tg" ]; then
+    fail "0 target" ".ccc.json needs 'target': the absolute path of the project repository"
+  elif [ "$(cd "$tg" 2>/dev/null && pwd -P)" != "$wt_main" ]; then
+    fail "0 target" "worktree belongs to $wt_main but .ccc.json target is $tg"
+  else pass "0 target $tg"; fi
+
   b=$(jq -r '.base // empty' "$j" 2>/dev/null)
   main_head=$(git -C "$(git -C "$w" rev-parse --path-format=absolute --git-common-dir)/.." rev-parse HEAD 2>/dev/null)
   if [ -n "$b" ] && git -C "$w" cat-file -e "$b^{commit}" 2>/dev/null && ! git -C "$w" merge-base --is-ancestor "$b" "$main_head" 2>/dev/null \

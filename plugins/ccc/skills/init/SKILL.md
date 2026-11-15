@@ -23,6 +23,16 @@ Reference, read before step 3: [`COMPONENT-RULES.md`](${CLAUDE_PLUGIN_ROOT}/refe
 
 Resolve the `ccc-plugin` repository path from the `ccc` marketplace entry in `~/.claude/plugins/known_marketplaces.json` (or `~/.claude/plugins/cache/ccc/` if remote). All references to `<ccc-repo>` below mean that repository root.
 
+## 0. Fix the target repository
+
+The target is the repository the task changes, which is often not this session's working directory. A Control Plane opened in `<ccc-repo>` works on other projects; `<ccc-repo>` itself is never the target.
+
+1. Take the target path from the request. When the request names none, use this session's working directory, unless that is inside `<ccc-repo>`: then ask the approver for the path and wait.
+2. Resolve it: `<target> = $(git -C <path> rev-parse --show-toplevel)`. Every later "main checkout" means `<target>`, and every `git` command in steps 1-7 runs with `-C <target>` or `-C <worktree>`, never relying on the current directory.
+3. Record `target` in `.ccc.json` when you create it in step 5.
+
+**Done when**: `<target>` is an absolute path to a git repository other than `<ccc-repo>`.
+
 ## 1. Scan Project & Memory
 
 Inspect the target repository before choosing anything:
@@ -61,8 +71,8 @@ Build a single flat view of all candidate Components across every layer:
 
 ## 4. Prepare Worktree
 
-- Branch: `ccc/<task-slug>`, always created from the main checkout's current HEAD (`git worktree add -b ccc/<task-slug> <path> HEAD`), unless the approver names another base. An earlier `ccc/*` branch is an unmerged deliverable waiting for the approver, never a base: read it for context if useful, but start from HEAD. When the slug is taken, add a suffix (`-2`, `-3`, or a date).
-- Worktree path: `../<project-name>.worktrees/<task-slug>` (sibling to target repo root).
+- Branch: `ccc/<task-slug>`, always created from `<target>`'s current HEAD (`git -C <target> worktree add -b ccc/<task-slug> <path> HEAD`), unless the approver names another base. An earlier `ccc/*` branch is an unmerged deliverable waiting for the approver, never a base: read it for context if useful, but start from HEAD. When the slug is taken, add a suffix (`-2`, `-3`, or a date).
+- Worktree path: `<target>/../<project-name>.worktrees/<task-slug>` (sibling to `<target>`).
 - Run `git worktree add -b ccc/<task-slug> <worktree-path>` and record the starting commit as `base` in `.ccc.json`.
 - Copy required untracked files (e.g., `.env*`) from the main checkout.
 - Install dependencies using the project's package manager.
@@ -77,7 +87,7 @@ Build a single flat view of all candidate Components across every layer:
 3. Turn on task Plugins with `${CLAUDE_PLUGIN_ROOT}/scripts/ccc-enable.sh <worktree> <plugin> ...` and list them in `.ccc.json` `plugins`. A bare `claude plugin install --scope local` from a linked worktree writes into the main checkout instead. Then add `skillOverrides`, `env`, and hooks to `<worktree>/.claude/settings.local.json`. Never touch `~/.claude/settings.json` or tracked project settings.
 4. Write `<worktree>/AGENTS.md` containing **only** the active Situation's steps and gates, project facts (paths, commands), explicitly named Components, Worker feedback prompt (1-2 lines on Harness fit), and the Working rules and Completion sections of `<ccc-repo>/harnesses/_template/AGENTS.md` (commit on the branch, then the PR rule).
 5. Ensure `<worktree>/CLAUDE.md` imports `@AGENTS.md` (append `@AGENTS.md` if `CLAUDE.md` exists, or create it).
-6. Record state in `<worktree>/.claude/.ccc.json` (`harness`, `harnessName`, `situation`, `approver`, `base`, `plugins`, `copiedComponents`, `smokeCheckNotes`, `createdAt`).
+6. Record state in `<worktree>/.claude/.ccc.json` (`target`, `harness`, `harnessName`, `situation`, `approver`, `base`, `plugins`, `copiedComponents`, `smokeCheckNotes`, `createdAt`).
 7. Add all injected files (`AGENTS.md`, `CLAUDE.md` if newly created, `.claude/settings.local.json`, `.claude/.ccc.json`, `.claude/ccc/`, and copied `.claude/{skills,agents,hooks,workflows}/`) to the git local exclude (`git rev-parse --git-path info/exclude`), wrapped in `# ccc:<branch>` / `# /ccc:<branch>` marker lines. Linked worktrees share this file with the main checkout, so the markers let `/ccc:promote` remove exactly this block. Verify `git status` is clean.
 
 **Done when**: All Harness files are installed in `<worktree>`, `settings.local.json` is valid JSON, and `git status` in `<worktree>` shows no injected files.
