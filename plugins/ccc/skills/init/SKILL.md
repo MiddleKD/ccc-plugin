@@ -28,7 +28,7 @@ Inspect the target repository before choosing anything:
 - Existing `CLAUDE.md`, `AGENTS.md`, `.claude/skills/`, `.claude/agents/`, `.claude/hooks/`, `.claude/workflows/`, `.claude/settings*.json`.
 - Project memory for this repo (`~/.claude/projects/<encoded-path>/memory/`) for prior Harness recommendations.
 
-Decide the approver now (see `APPROVAL.md`): `hc:<terminal>` when this request arrived through hc, `user` when a person typed it here.
+Decide the approver now (see `APPROVAL.md`): `hc:<terminal>` when this request arrived through hc, `user` when a person typed it here. From this point every question goes to the approver that way, including questions asked before `.ccc.json` exists.
 
 **Done when**: Stack, test command, existing project Components, project memory Harness affinity, and the approver are known.
 
@@ -57,7 +57,7 @@ Build a single flat view of all candidate Components across every layer:
 
 ## 4. Prepare Worktree
 
-- Branch: `ccc/<task-slug>` (from current HEAD unless user specified a base).
+- Branch: `ccc/<task-slug>` (from current HEAD unless the approver named a base). Recurring tasks reuse a slug, so when the branch already exists, add a suffix (`-2`, `-3`, or a date) and leave the old branch alone; it holds an earlier Worker's deliverable.
 - Worktree path: `../<project-name>.worktrees/<task-slug>` (sibling to target repo root).
 - Run `git worktree add -b ccc/<task-slug> <worktree-path>` and record the starting commit as `base` in `.ccc.json`.
 - Copy required untracked files (e.g., `.env*`) from the main checkout.
