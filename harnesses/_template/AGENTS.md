@@ -12,7 +12,7 @@
 
 ## Working rules
 
-- You are already in an isolated worktree. Start subagents without `isolation: worktree`; that option puts their copy under the main checkout and leaves it behind.
+- You are already in an isolated worktree. Start subagents with no `isolation` field, so they run in this worktree and see your uncommitted changes. Every isolation mode gives them a different copy of the code.
 
 ## Completion
 

@@ -22,7 +22,7 @@ hc and Claude Code sessions inherit a non-interactive PATH, so binaries installe
 
 ## Subagents inside a Worker
 
-A subagent started with `isolation: worktree` creates its worktree under the **main checkout's** `.claude/worktrees/`, not the Worker's. When it edits files, the worktree stays behind after the Worker finishes, dirties the main checkout, and fails the cleanup gate. In `AGENTS.md`, tell the Worker to start subagents without `isolation: worktree`; they already run inside the isolated task worktree. An authored agent for a Harness omits the `isolation` field for the same reason.
+A Worker's subagents run with no `isolation` field, in the task worktree, where they see uncommitted changes. Every isolation mode hands them a different copy: `worktree` creates one under the **main checkout's** `.claude/worktrees/` that stays behind and dirties it; `remote` runs in a cloud copy that has none of the Worker's uncommitted edits, so a reviewer audits stale code. The template's Working rules carry this; an authored agent omits the `isolation` field for the same reason.
 
 ## Linked Worktree Fallback Gotcha
 
