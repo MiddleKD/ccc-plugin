@@ -226,6 +226,17 @@ cleanup)
   ex=$(git -C "$m" rev-parse --path-format=absolute --git-path info/exclude)
   if grep -qx "# ccc:$br" "$ex"; then fail "exclude block" "remove '# ccc:$br' ... '# /ccc:$br' from $ex"
   else pass "exclude block removed"; fi
+  # Local Plugin installs must not outlive their worktree.
+  orphans=$(jq -r '[.plugins | to_entries[] | .key as $k | .value[] | select(.scope=="local") | "\($k)\t\(.projectPath)"] | .[]' \
+    "$HOME/.claude/plugins/installed_plugins.json" 2>/dev/null | while IFS=$'\t' read -r k pth; do
+      case $pth in *.worktrees/*) [ -d "$pth" ] || printf '%s@%s ' "$k" "$pth";; esac; done)
+  [ -n "$orphans" ] && fail "plugin records" "local installs left for removed worktrees: $orphans(run ccc-disable.sh before removing a worktree; to clear now, delete those entries from ~/.claude/plugins/installed_plugins.json)"
+  # Every ccc/* worktree of this repo must have a handoff record; one without is an abandoned attempt.
+  for wp in $(git -C "$m" worktree list --porcelain | awk '/^worktree /{w=$2} /^branch refs\/heads\/ccc\//{print w}'); do
+    wb=$(git -C "$wp" branch --show-current 2>/dev/null)
+    [ -f "$(git -C "$m" rev-parse --path-format=absolute --git-common-dir)/ccc/${wb//\//_}.json" ] \
+      || fail "abandoned worktree" "$wp ($wb) has no handoff record; remove it and its branch if it holds no commits"
+  done
   stray=$(git -C "$m" worktree list --porcelain | awk '/^worktree /{print $2}' | grep '/\.claude/worktrees/' || true)
   if [ -n "$stray" ]; then
     fail "subagent worktrees" "left by an isolation:worktree subagent: $stray (inspect, then git worktree remove)"

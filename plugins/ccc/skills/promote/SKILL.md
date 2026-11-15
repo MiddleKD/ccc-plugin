@@ -69,7 +69,7 @@ ${CLAUDE_PLUGIN_ROOT}/scripts/ccc-verdict.sh <main-checkout> ccc/<task-slug> <ve
 
 Only **after** `ccc-verdict.sh` succeeded. The Worker's deliverable is the branch, so cleanup removes the worktree and keeps the branch:
 1. Confirm the Worker's work is committed on `ccc/<task-slug>`: `git -C <worktree> status --short` lists nothing outside the Harness files. If it lists anything else, stop and ask the approver.
-2. Remove the worktree with plain `git worktree remove <worktree>`. When it refuses, report why and stop; `--force` needs the approver.
+2. Run `${CLAUDE_PLUGIN_ROOT}/scripts/ccc-disable.sh <worktree>` to uninstall the Plugins it turned on, then remove the worktree with plain `git worktree remove <worktree>`. Also remove any other `ccc/*` worktree of this repo that you created in this run without a handoff (a failed attempt), with its branch if it has no commits. When it refuses, report why and stop; `--force` needs the approver.
 3. Keep branch `ccc/<task-slug>`. Delete it only when the approver says so or `git branch --merged` lists it, using `git branch -d`.
 4. Delete the `# ccc:<branch>` … `# /ccc:<branch>` block from the shared git exclude (`git rev-parse --git-path info/exclude`, run from the main checkout).
 
