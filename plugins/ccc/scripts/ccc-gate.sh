@@ -145,7 +145,20 @@ init)
     fail "4c settings.local.json" "invalid JSON"
   fi
   check_components "$w/.claude"
-  [ "$h" = instant ] && check_declared "$w/.claude/ccc/HARNESS.md" "$w/.claude"
+  if [ "$h" = instant ]; then
+    check_declared "$w/.claude/ccc/HARNESS.md" "$w/.claude"
+    # Every inventory Plugin must be either used or listed as considered, so a
+    # Control Plane cannot silently skip Plugins it never looked at.
+    if [ -x "$here/ccc-inventory.sh" ] && [ -f "$w/.claude/ccc/HARNESS.md" ]; then
+      miss=""
+      for pl in $(jq -r '.plugins[].name' "$repo/.claude-plugin/marketplace.json"); do
+        [ "$pl" = ccc ] && continue
+        "$here/ccc-inventory.sh" "$pl" 2>/dev/null | grep -q '^  mod ' && continue
+        grep -q -F "$pl" "$w/.claude/ccc/HARNESS.md" || miss="$miss $pl"
+      done
+      [ -n "$miss" ] && fail "3c Plugins considered" "HARNESS.md names neither use nor reason to skip for:$miss (add them under Components 'Considered, not used')"
+    fi
+  fi
 
   st=$(git -C "$w" status --short --untracked-files=all)
   if [ -z "$st" ]; then pass "5 git status clean"

@@ -16,6 +16,7 @@ Each line: path or name, origin (`authored`, or copied from `<plugin>@<version>`
 - **agents/**: `<agent>.md` — <origin> — <step, reason>
 - **workflows/**: `<workflow>.js` — <origin> — <step, reason>
 - **hooks/**: `<hook>` (<event>) — <origin> — <gate it enforces>; env it reads: `<VAR>`
+- **Considered, not used**: `<plugin>:<component>` — <why: missing binary, needs API key, overlaps the chosen one>
 
 ## Situations
 
