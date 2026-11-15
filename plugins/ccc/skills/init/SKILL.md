@@ -15,6 +15,8 @@ ${CLAUDE_PLUGIN_ROOT}/scripts/ccc-handoff.sh <worktree> <task-slug> "<task>"
 
 To check progress before that, run `${CLAUDE_PLUGIN_ROOT}/scripts/ccc-gate.sh init <worktree>`. On `FAIL`, fix what the line names and run it again. When the main checkout has uncommitted changes, stop and ask the approver.
 
+You are the Control Plane: run every step and both scripts in this session. A subagent cannot be the Control Plane, because hc replies and the Worker's reports come back to this terminal.
+
 Reference, read before step 3: [`COMPONENT-RULES.md`](${CLAUDE_PLUGIN_ROOT}/reference/COMPONENT-RULES.md) for precedence and authoring Components, [`APPROVAL.md`](${CLAUDE_PLUGIN_ROOT}/reference/APPROVAL.md) for who approves and how, [`SMOKE-CHECK.md`](SMOKE-CHECK.md) for step 6.
 
 ## Locate ccc-plugin
@@ -28,7 +30,7 @@ Inspect the target repository before choosing anything:
 - Existing `CLAUDE.md`, `AGENTS.md`, `.claude/skills/`, `.claude/agents/`, `.claude/hooks/`, `.claude/workflows/`, `.claude/settings*.json`.
 - Project memory for this repo (`~/.claude/projects/<encoded-path>/memory/`) for prior Harness recommendations.
 
-Decide the approver now (see `APPROVAL.md`): `hc:<terminal>` when this request arrived through hc, `user` when a person typed it here. From this point every question goes to the approver that way, including questions asked before `.ccc.json` exists.
+Decide the approver now (see `APPROVAL.md`): `hc:<terminal>` with the sender's terminal from the `<hc from="<terminal> …">` tag when this request arrived through hc, `user` when a person typed it here. The approver is never this session's own `$HC_TERMINAL_ID`. From this point every question goes to the approver that way, including questions asked before `.ccc.json` exists.
 
 **Done when**: Stack, test command, existing project Components, project memory Harness affinity, and the approver are known.
 

@@ -32,7 +32,7 @@ Score the run honestly on all three:
 
 Before scoring, revise the draft from the evidence: add traps the Worker hit and gates that caught a bug, and drop Components it never used. When the Worker skipped a gate, enforce it with a Component (a Stop hook that runs the gate command, or a reviewer agent) instead of adding another instruction. Score the revised draft.
 
-If the setup does not clear all three, skip promotion proposals and state why, naming what the recipe would need to earn promotion. Still propose `CONFLICTS.md` updates if a real Component conflict was observed.
+When all three are yes, the verdict is `promoted` or `updated`; `affinity-only` is for a run where reuse is a no. When a criterion is no, skip promotion and state why, naming what the recipe would need to earn it. Still propose `CONFLICTS.md` updates if a real Component conflict was observed.
 
 **Done when**: Each criterion has a yes/no with one evidence sentence from the transcript or git state, and the verdict is one of `promoted`, `updated` (an existing Harness), `affinity-only`, or `none`.
 
@@ -40,7 +40,7 @@ If the setup does not clear all three, skip promotion proposals and state why, n
 
 Keep **Harness promotion** (generic recipe in `ccc-plugin`) strictly separate from **project affinity** (project memory):
 
-- **A. Promote to `ccc-plugin` Harness** (when reusable across projects):
+- **A. Promote to `ccc-plugin` Harness** (when the reuse criterion is a yes: the shape recurs and the recipe, stripped of project facts, would serve another project):
   - Copy the revised `<worktree>/.claude/ccc/` to `<ccc-repo>/harnesses/<harness-name>/` (name it after the task shape). If a promoted Harness was used, update that Harness instead of creating a new one: merge, keeping every earlier step, gate, and trap unless this run's evidence shows it wrong, and mark language- or stack-specific lines with their stack.
   - Copy any external Components used from Plugins into `<harness-name>/{skills,agents,hooks,workflows}/` so the Harness is self-contained (record provenance in `HARNESS.md`, follow `${CLAUDE_PLUGIN_ROOT}/reference/COMPONENT-RULES.md`).
   - Strip **all** project-specific details (repo names, paths, library versions, directory ownership).

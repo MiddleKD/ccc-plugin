@@ -127,7 +127,9 @@ init)
   else fail "3 Harness" ".ccc.json needs a 'harness' field"; fi
 
   appr=$(jq -r '.approver // empty' "$j" 2>/dev/null)
-  if [[ $appr == user || $appr == hc:* ]]; then pass "3b approver $appr"
+  if [[ $appr == hc:* && -n "${HC_TERMINAL_ID:-}" && ${appr#hc:} == "$HC_TERMINAL_ID" ]]; then
+    fail "3b approver" "approver is this Control Plane ($appr); use the terminal that sent the request"
+  elif [[ $appr == user || $appr == hc:* ]]; then pass "3b approver $appr"
   else fail "3b approver" ".ccc.json needs 'approver': \"user\" or \"hc:<terminal>\" (see APPROVAL.md)"; fi
 
   if [ -f "$w/AGENTS.md" ] && grep -qx '@AGENTS.md' "$w/CLAUDE.md" 2>/dev/null; then pass "4 AGENTS.md imported"
