@@ -22,7 +22,7 @@ hc and Claude Code sessions inherit a non-interactive PATH, so binaries installe
 
 ## Subagents inside a Worker
 
-A Worker's subagents run in the task worktree, where they see uncommitted changes. The ccc plugin's own `PreToolUse` hook denies any `Agent` call with an `isolation` field when `.claude/.ccc.json` exists, because every isolation mode hands the subagent a different copy (`worktree` under the main checkout, `remote` in the cloud) without the Worker's edits. An authored agent omits `isolation`.
+A Worker's subagents run in the task worktree, where they see uncommitted changes. The ccc plugin's own `PreToolUse` hook removes the `isolation` field from any `Agent` call when `.claude/.ccc.json` exists and lets the call run, because every isolation mode hands the subagent a different copy (`worktree` under the main checkout, `remote` in the cloud) without the Worker's edits. An authored agent omits `isolation`.
 
 ## Linked Worktree Fallback Gotcha
 
