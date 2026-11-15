@@ -1,39 +1,42 @@
 # typed-value-migration
 
-Harness for migrating a primitive value type (e.g. float money to Decimal) across several modules under a strict type checker.
+Harness for migrating a primitive value representation across multiple modules under a strict type checker.
 
 ## Fit
 
-- **Use when**: multi-module refactor that changes a core value type, has a strict type checker and a test suite.
-- **Avoid when**: single-file edits or behaviour changes unrelated to the type.
+- **Use when**: a cross-module representation change has a strict type checker, behavioral tests, and compatibility requirements at public boundaries.
+- **Avoid when**: a single-file edit or unrelated behavior change.
 
 ## Components
 
-- **Enabled Plugins**: none beyond globals. Type checker and tests come from the project's own dev environment.
+- **Enabled Plugins**: none beyond globals; use the project's own type checker and test runner.
 - **Bundled Components**: none.
 
 ## Situations
 
-### Value-type migration
-1. Baseline: run tests and type checker, record results. Gate: commands run, output noted.
-2. Change the type at its source (data definitions), then propagate to consumers. Construct from strings, never from floats. Gate: type checker reports no errors.
-3. Implement rounding explicitly at the one place the spec says (quantize with the named rounding mode). Gate: tests covering the half-way case pass.
-4. Remove xfail markers for tests the migration fixes. Gate: strict xfail would fail otherwise; full test suite green.
-5. Verify output formatting unchanged. Gate: rendered output compared against pre-change output for sample inputs.
-6. Gate: `git diff --stat` limited to intended source and test files.
+### Cross-module value migration
+1. Inspect public APIs, source, tests, package manager, and baseline behavior. Install dependencies from the lockfile if needed before baseline checks. Gate: record baseline test and typecheck results.
+2. Identify invariants and all representation boundaries; change the source-of-truth type and propagate through consumers while keeping public input/output contracts explicit. Gate: strict typecheck passes and changed state uses the new representation consistently.
+3. Implement domain-required rounding/conversion explicitly. Add representative boundary tests, including an exact halfway case whose input avoids conversion ambiguity. Gate: specified rounding behavior passes those tests.
+4. Remove todo/xfail markers only after completing their assertions. Gate: full suite passes with zero todo/xfail cases.
+5. Verify externally visible output and compatibility against existing examples. Gate: output-format tests remain unchanged and pass.
+6. Review scope and whitespace. Gate: typecheck, full test suite, and diff check pass; diff contains only intended source/tests.
 
-Traps (observed and expected):
-- Baseline snapshot scripts must use the module's real public API; a guessed constant name failed once. Read the module before scripting the snapshot.
-- Tests that add fixtures to module-level registries must clean up in try/finally or a fixture.
-- Tracked generated artifacts (e.g. bytecode caches) get dirtied by running tools; restore them before committing so the diff gate holds.
-- Check the diff gate before reporting done.
-- `Decimal(1.1)` captures float error; `round()` on Decimal is banker's rounding, use `quantize(..., ROUND_HALF_UP)`; f-string formatting of Decimal differs from float for `:.2f` only if quantum is lost, so check; leftover `float` annotations and `0.0` literals fail strict mode.
+Traps:
+- Public types may have unchanged syntax but changed units; document the internal unit and convert only at explicit boundaries.
+- Binary floating-point input can make a nominal halfway conversion ambiguous. Choose test values that yield the exact boundary through the real API, and validate invalid/non-finite/too-small inputs before conversion.
+- Python: avoid `Decimal(float)` because it captures binary approximation; `round()` on `Decimal` uses ties-to-even, so use `quantize(..., ROUND_HALF_UP)` when half-up is required.
+- JavaScript/TypeScript: integer minor units avoid repeated float arithmetic; `Math.round` does not implement symmetric half-up for negative ties, so define the signed rounding policy explicitly if negative values are valid.
+- A test without an inline todo option may still be reported as todo if another marker remains; inspect the runner summary and require zero todos.
+- Do not assume dependencies are present: install from the lockfile when the type checker is missing.
+- Check output formatting and diff scope, not only typechecking.
 
 ## Init Decisions
 
-- Project facts live in AGENTS.md only.
+- Keep project-specific paths and commands in AGENTS.md.
+- Add only components needed beyond the project test/typecheck tools.
 
 ## Smoke Check
 
-- **Task**: List loaded Components, confirm the project test runner and type checker both run.
-- **Pass criteria**: both commands execute and report current baseline.
+- **Task**: list loaded Components, then run project tests and strict type check.
+- **Pass criteria**: expected Components are visible; both commands run and report baseline results.
