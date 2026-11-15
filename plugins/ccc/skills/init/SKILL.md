@@ -1,9 +1,11 @@
 ---
 name: init
-description: Provision a worktree with a Harness or Instant Harness for a Worker, then Smoke Check it. Use when handing a task to a new Worker.
+description: Start every Worker through this skill, before hc or herdr-core. Use whenever you give a coding task to another Claude session (a Worker, agent, or background session), for any project path. It creates the worktree, Harness, and Smoke Check, then launches the Worker.
 ---
 
 # /ccc:init
+
+Use this skill before `hc run` for any Worker. Launching a Worker with `hc run` directly puts it in the project's main checkout with no Harness; `ccc-handoff.sh` (step 7) is the one launcher.
 
 Provision an isolated git worktree for a task, install a matching Harness (or assemble an Instant Harness), enforce Component precedence, and verify with a real `hc` Worker Smoke Check.
 
