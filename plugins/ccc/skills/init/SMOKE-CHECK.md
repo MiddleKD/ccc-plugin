@@ -25,5 +25,5 @@ Wait for idle prompt, then send the Smoke Check prompt with `hc send` and wait w
 
 - If Smoke Check fails, diagnose the cause (settings, path, hook permission, precedence collision), fix the worktree setup, and retry up to **2 times**.
 - If it still fails after 2 retries, report the failure, logs, and attempted fixes to the user.
-- Record every Smoke Check failure and fix in `<worktree>/.claude/.ccc-harness.json` (`smokeCheckNotes`) so `/ccc:promote` and `CONFLICTS.md` have the evidence.
+- Record every Smoke Check failure and fix in `<worktree>/.claude/.ccc.json` (`smokeCheckNotes`) so `/ccc:promote` and `CONFLICTS.md` have the evidence.
 - Clean up the Smoke Check `hc` terminal after reading its final output.

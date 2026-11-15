@@ -1,7 +1,6 @@
 ---
 name: init
-description: Initialize a task-specific worktree with a Harness or Instant Harness and run a herdr Smoke Check
-disable-model-invocation: true
+description: Provision a worktree with a Harness or Instant Harness for a Worker, then Smoke Check it. Use when handing a task to a new Worker.
 ---
 
 # /ccc:init
@@ -59,8 +58,8 @@ Build a single flat view of all candidate Components across every layer:
 3. Write `<worktree>/.claude/settings.local.json` with `enabledPlugins` and `skillOverrides`. Never touch `~/.claude/settings.json` or tracked project settings.
 4. Write `<worktree>/AGENTS.md` containing **only** the active Situation's instructions, explicitly named Components, Worker feedback prompt (1-2 lines on Harness fit), and PR rule (draft PR by default; ready PR only if user explicitly authorized it at `init`).
 5. Ensure `<worktree>/CLAUDE.md` imports `@AGENTS.md` (append `@AGENTS.md` if `CLAUDE.md` exists, or create it).
-6. Record state in `<worktree>/.claude/.ccc-harness.json` (`harness`, `situation`, `plugins`, `copiedComponents`, `smokeCheckNotes`, `createdAt`).
-7. Add all injected files (`AGENTS.md`, `CLAUDE.md` if newly created, `.claude/settings.local.json`, `.claude/.ccc-harness.json`, and copied `.claude/{skills,agents,hooks,workflows}/`) to `<worktree>`'s git local exclude (`git rev-parse --git-path info/exclude`). Verify `git status` is clean.
+6. Record state in `<worktree>/.claude/.ccc.json` (`harness`, `situation`, `plugins`, `copiedComponents`, `smokeCheckNotes`, `createdAt`).
+7. Add all injected files (`AGENTS.md`, `CLAUDE.md` if newly created, `.claude/settings.local.json`, `.claude/.ccc.json`, and copied `.claude/{skills,agents,hooks,workflows}/`) to `<worktree>`'s git local exclude (`git rev-parse --git-path info/exclude`). Verify `git status` is clean.
 
 **Done when**: All Harness files are installed in `<worktree>`, `settings.local.json` is valid JSON, and `git status` in `<worktree>` shows no injected files.
 

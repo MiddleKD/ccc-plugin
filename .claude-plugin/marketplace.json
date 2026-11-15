@@ -7,10 +7,10 @@
   },
   "plugins": [
     {
-      "name": "ccc-harness",
+      "name": "ccc",
       "description": "Control Plane skills for initializing task-specific worktree harnesses, running Smoke Checks, and promoting proven setups",
       "category": "productivity",
-      "source": "./plugins/ccc-harness"
+      "source": "./plugins/ccc"
     },
     {
       "name": "mattpocock-skills",

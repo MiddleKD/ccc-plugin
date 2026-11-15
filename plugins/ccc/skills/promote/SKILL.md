@@ -1,7 +1,6 @@
 ---
 name: promote
-description: Evaluate a completed worktree Harness and promote reusable setups or record project affinity
-disable-model-invocation: true
+description: Evaluate a Worker's Harness and promote it or record project affinity. Use when a Worker finishes, before removing its worktree.
 ---
 
 # /ccc:promote
@@ -15,12 +14,12 @@ Resolve `<ccc-repo>` from `~/.claude/plugins/known_marketplaces.json` (`ccc` ent
 ## 1. Gather Evidence (Before Worktree Cleanup)
 
 Inspect the target worktree and Worker session **before** removing the worktree or branch:
-- Read `<worktree>/.claude/.ccc-harness.json` (used Harness or `instant`, situation, copied Components, `smokeCheckNotes`).
+- Read `<worktree>/.claude/.ccc.json` (used Harness or `instant`, situation, copied Components, `smokeCheckNotes`).
 - Read the Worker's final report (including its 1-2 lines of Harness feedback).
 - Inspect the Worker's session output (`hc read` if still alive) and Claude session transcript under `~/.claude/projects/` for actual tool calls, friction, retries, and hook/skill issues.
 - Check git diff / PR status in `<worktree>` to verify task completion.
 
-**Done when**: Evidence from `.ccc-harness.json`, Worker report, transcript, and git state is collected.
+**Done when**: Evidence from `.ccc.json`, Worker report, transcript, and git state is collected.
 
 ## 2. Evaluate Against Three Criteria
 
@@ -39,7 +38,7 @@ Keep **Harness promotion** (generic recipe in `ccc-plugin`) strictly separate fr
 
 - **A. Promote to `ccc-plugin` Harness** (when reusable across projects):
   - Copy `<ccc-repo>/harnesses/_template/` to `<ccc-repo>/harnesses/<harness-name>/`.
-  - Copy any external Components used from Plugins into `<harness-name>/{skills,agents,hooks,workflows}/` so the Harness is self-contained (record provenance in `HARNESS.md`, follow `plugins/ccc-harness/skills/init/COMPONENT-RULES.md`).
+  - Copy any external Components used from Plugins into `<harness-name>/{skills,agents,hooks,workflows}/` so the Harness is self-contained (record provenance in `HARNESS.md`, follow `plugins/ccc/skills/init/COMPONENT-RULES.md`).
   - Strip **all** project-specific details (repo names, paths, library versions, directory ownership).
   - Keep `HARNESS.md` <= 200 lines.
   - Ask user confirmation before committing to `ccc-plugin`.

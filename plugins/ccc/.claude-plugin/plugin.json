@@ -1,5 +1,5 @@
 {
-  "name": "ccc-harness",
+  "name": "ccc",
   "version": "0.1.0",
   "description": "Control Plane skills (init, promote) for assembling worktree harnesses, running herdr Smoke Checks, and promoting reusable setups",
   "author": {

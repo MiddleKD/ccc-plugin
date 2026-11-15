@@ -19,7 +19,7 @@ Status: ready-for-agent
 
 1. **개인 Plugin Marketplace**: 마음에 드는 Plugin을 업스트림 Git 소스로 등록해 두고, 프로젝트·worktree 단위로 골라 켠다. 코드 수정이 불가피하면 개인 Fork로 소스를 바꾼다.
 2. **Harness 라이브러리**: 검증된 작업 환경을 폴더 하나로 완결된 Harness(Component + 설정 템플릿 + 지침 + 사용 안내)로 보관한다.
-3. **Control Plane 스킬** (`ccc-harness` 플러그인): herdr의 Control Plane이 `/ccc:init`으로 대상 프로젝트를 스캔하고 worktree에 Harness 또는 Instant Harness를 설치한 뒤 실제 Worker로 Smoke Check까지 하고, 작업이 끝나면 `/ccc:promote`로 그 환경이 재사용할 가치가 있는지 평가해 Harness로 승격하거나 project memory에 기록한다.
+3. **Control Plane 스킬** (`ccc` 플러그인): herdr의 Control Plane이 `/ccc:init`으로 대상 프로젝트를 스캔하고 worktree에 Harness 또는 Instant Harness를 설치한 뒤 실제 Worker로 Smoke Check까지 하고, 작업이 끝나면 `/ccc:promote`로 그 환경이 재사용할 가치가 있는지 평가해 Harness로 승격하거나 project memory에 기록한다.
 
 ## User Stories
 
@@ -30,7 +30,7 @@ Status: ready-for-agent
 3. As a 사용자, I want Plugin 코드를 고쳐야 할 때 소스를 내 Fork로 바꾸는 탈출구, so that 수정과 업스트림 추적을 Git으로 함께 할 수 있다
 4. As a 사용자, I want 코드 수정 전에 Harness 쪽(지침, hook, 설정)에서 먼저 동작을 보완하는 것을 원칙으로, so that Fork 유지 부담을 최소화할 수 있다
 5. As a 사용자, I want 초기 Plugin으로 mattpocock-skills, exa, ponytail, pyright-lsp, superpowers를 등록, so that 지금 쓰는 도구들로 바로 시작할 수 있다
-6. As a 사용자, I want 전역으로 켤 Plugin(ccc-harness, exa)과 작업별로 켤 Plugin을 별도 문서 없이 구분, so that Plugin을 추가·제거할 때 문서를 고치지 않아도 된다
+6. As a 사용자, I want 전역으로 켤 Plugin(ccc, exa)과 작업별로 켤 Plugin을 별도 문서 없이 구분, so that Plugin을 추가·제거할 때 문서를 고치지 않아도 된다
 7. As a Control Plane, I want 마켓플레이스 목록과 전역 settings를 실행 시점에 비교해 전역 활성 여부를 판별, so that 항상 실제 설정 기준으로 판단할 수 있다
 8. As a 사용자, I want 전역 settings.json의 머신 고유 설정(env, herdr hook)을 ccc가 덮어쓰지 않게, so that 내 환경이 망가지지 않는다
 
@@ -125,15 +125,15 @@ Status: ready-for-agent
 
 ### 설치와 운영
 
-74. As a 사용자, I want ccc 마켓플레이스 등록과 ccc-harness 전역 활성화를 마지막에 확인받고 진행, so that 전역 설정 변경을 내가 통제한다
+74. As a 사용자, I want ccc 마켓플레이스 등록과 ccc 플러그인 전역 활성화를 마지막에 확인받고 진행, so that 전역 설정 변경을 내가 통제한다
 75. As a 사용자, I want 어떤 프로젝트에서 herdr Control Plane을 열든 `/ccc:init`을 바로 호출, so that 일관된 흐름으로 작업을 시작할 수 있다
 
 ## Implementation Decisions
 
 ### 모듈
 
-- **Marketplace 매니페스트**: ccc-plugin 루트가 Claude Code 마켓플레이스가 된다. 외부 Plugin은 `github` 또는 `git-subdir` 소스로 업스트림을 가리킨다. 직접 만든 `ccc-harness`만 레포 내부 경로 소스로 둔다. 외부 Plugin 코드를 레포에 복사(벤더링)하지 않는다.
-- **`ccc-harness` 플러그인**: Control Plane 전용. `init`과 `promote` 두 skill을 제공한다. 전역으로 켜 둔다.
+- **Marketplace 매니페스트**: ccc-plugin 루트가 Claude Code 마켓플레이스가 된다. 외부 Plugin은 `github` 또는 `git-subdir` 소스로 업스트림을 가리킨다. 직접 만든 `ccc` 플러그인만 레포 내부 경로 소스로 둔다. 외부 Plugin 코드를 레포에 복사(벤더링)하지 않는다.
+- **`ccc` 플러그인**: Control Plane 전용. `init`과 `promote` 두 skill을 제공한다. 전역으로 켜 둔다.
 - **Harness 라이브러리**: Harness 작성 규칙 문서와 빈 템플릿 하나로 시작한다. 실제 Harness는 Promotion으로만 추가된다.
 - **Conflict Rules**: 단일 파일. 처음엔 비어 있고, 실제로 겪은 Component 간 충돌과 우선순위만 한두 줄씩 누적한다.
 - **ADR**: "Harness는 외부 Component를 복사해 폴더 하나로 완결한다" 결정을 ADR로 남긴다 (되돌리기 어렵고, 처음 보는 사람에게 의외이며, 실제 trade-off의 결과).
@@ -183,7 +183,7 @@ Status: ready-for-agent
 
 ### 전역 설정 변경 (사용자 확인 후 마지막에)
 
-- 사용자 전역 settings에 ccc 마켓플레이스를 등록하고 `ccc-harness`를 전역 활성화한다.
+- 사용자 전역 settings에 ccc 마켓플레이스를 등록하고 `ccc` 플러그인을 전역 활성화한다.
 - exa를 어느 마켓플레이스 소스로 켤지는 그때 결정한다.
 - 기존 env, herdr hook 등 머신 고유 설정은 건드리지 않는다.
 
