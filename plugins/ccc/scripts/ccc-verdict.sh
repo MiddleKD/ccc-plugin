@@ -3,13 +3,20 @@
 #
 # Records the /ccc:promote result in the handoff record and delivers the final
 # report to the approver. <verdict> is promoted | updated | affinity-only | none.
-# <criteria-json> is {"completion":"...","contribution":"...","reuse":"..."},
+# <criteria-json> is {"completion":"yes: ...","contribution":"yes: ...","reuse":"no: ..."},
 # one evidence sentence each. <report-file> holds the final report text.
 set -u
 m=${1:?main checkout}; br=${2:?branch}; verdict=${3:?verdict}; crit=${4:?criteria json}; report=${5:?report file}
 case $verdict in promoted|updated|affinity-only|none) ;; *) echo "verdict must be promoted|updated|affinity-only|none"; exit 2;; esac
-echo "$crit" | jq -e 'has("completion") and has("contribution") and has("reuse")' >/dev/null \
-  || { echo "criteria-json needs completion, contribution, reuse"; exit 2; }
+echo "$crit" | jq -e '[.completion, .contribution, .reuse] | all(type == "string" and test("^(yes|no):"; "i"))' >/dev/null \
+  || { echo "criteria-json needs completion, contribution, reuse, each starting with 'yes:' or 'no:'"; exit 2; }
+allyes=$(echo "$crit" | jq -r '[.completion, .contribution, .reuse] | all(test("^yes:"; "i"))')
+if [ "$allyes" = true ] && [ "$verdict" != promoted ] && [ "$verdict" != updated ]; then
+  echo "all three criteria are yes, so the verdict is promoted (or updated for a promoted Harness), not $verdict. If reuse is really no, say so in the reuse criterion."; exit 2
+fi
+if [ "$allyes" != true ] && { [ "$verdict" = promoted ] || [ "$verdict" = updated ]; }; then
+  echo "verdict $verdict needs all three criteria yes"; exit 2
+fi
 [ -s "$report" ] || { echo "report file is empty"; exit 2; }
 
 rec="$(git -C "$m" rev-parse --path-format=absolute --git-common-dir)/ccc/${br//\//_}.json"

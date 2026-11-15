@@ -28,19 +28,19 @@ Inspect the target worktree and Worker session **before** removing the worktree 
 Score the run honestly on all three:
 1. **Smooth completion**: Did the Worker finish without setup blockers or repeated retries?
 2. **Harness contribution**: Did the bundled Plugins, skills, agents, hooks, or `AGENTS.md` instructions measurably help?
-3. **Reuse value**: Will this task **shape** recur? A saved draft whose `.runs` is 2 or more has already recurred in this repo; that is evidence for promotion, not only for affinity. Judge the recipe in `.claude/ccc/HARNESS.md` (steps, gates, traps, Component choices), not this instance. A recipe built from generic Plugins is still reusable when its steps and gates are what made the run succeed. A Harness that only names a Plugin and adds nothing a Worker would not do anyway has no reuse value.
+3. **Reuse value**: Would this recipe help the next Worker given this task shape, here or in another project? Judge the recipe in `.claude/ccc/HARNESS.md` (steps, gates, traps, Component choices), not this instance. Yes when its steps, gates, or traps did work a Worker would not do unprompted. No when it only names Plugins or restates defaults. Evidence from one repo is enough: promotion makes a recipe that worked findable, and later runs elsewhere refine it through `updated`. A saved draft with `.runs` of 2 or more is strong evidence for yes.
 
 Before scoring, revise the draft from the evidence: add traps the Worker hit and gates that caught a bug, and drop Components it never used. When the Worker skipped a gate, enforce it with a Component (a Stop hook that runs the gate command, or a reviewer agent) instead of adding another instruction. Score the revised draft.
 
-When all three are yes, the verdict is `promoted` or `updated`; `affinity-only` is for a run where reuse is a no. When a criterion is no, skip promotion and state why, naming what the recipe would need to earn it. Still propose `CONFLICTS.md` updates if a real Component conflict was observed.
+Each criterion is one yes or no. All three yes means the verdict is `promoted` (or `updated` when the run used a promoted Harness); `ccc-verdict.sh` rejects any other verdict for an all-yes run. `affinity-only` is for a run where reuse is no. When a criterion is no, skip promotion and state why, naming what the recipe would need to earn it. Still propose `CONFLICTS.md` updates if a real Component conflict was observed.
 
-**Done when**: Each criterion has a yes/no with one evidence sentence from the transcript or git state, and the verdict is one of `promoted` (new folder in `<ccc-repo>/harnesses/`), `updated` (an existing folder there changed), `affinity-only` (reuse is a no; project memory only), or `none`. A saved draft is not a promoted Harness: improving it is part of every verdict, and `ccc-verdict.sh` saves it.
+**Done when**: Each criterion starts with `yes:` or `no:` followed by one evidence sentence from the transcript or git state, and the verdict is one of `promoted` (new folder in `<ccc-repo>/harnesses/`), `updated` (an existing folder there changed), `affinity-only` (reuse is a no; project memory only), or `none`. A saved draft is not a promoted Harness: improving it is part of every verdict, and `ccc-verdict.sh` saves it.
 
 ## 3. Propose Separate Actions (Only What Earned It)
 
 Keep **Harness promotion** (generic recipe in `ccc-plugin`) strictly separate from **project affinity** (project memory):
 
-- **A. Promote to `ccc-plugin` Harness** (when the reuse criterion is a yes: the shape recurs and the recipe, stripped of project facts, would serve another project):
+- **A. Promote to `ccc-plugin` Harness** (all three criteria yes):
   - Copy the revised `<worktree>/.claude/ccc/` to `<ccc-repo>/harnesses/<harness-name>/` (name it after the task shape). If a promoted Harness was used, update that Harness instead of creating a new one: merge, keeping every earlier step, gate, and trap unless this run's evidence shows it wrong, and mark language- or stack-specific lines with their stack.
   - Copy any external Components used from Plugins into `<harness-name>/{skills,agents,hooks,workflows}/` so the Harness is self-contained (record provenance in `HARNESS.md`, follow `${CLAUDE_PLUGIN_ROOT}/reference/COMPONENT-RULES.md`).
   - Strip **all** project-specific details (repo names, paths, library versions, directory ownership).
@@ -62,7 +62,7 @@ Keep **Harness promotion** (generic recipe in `ccc-plugin`) strictly separate fr
 Write the final report to a file: task result with commit hashes, gate outputs, the Harness composition (each Component and why it fit the task, or why `AGENTS.md` alone was enough), the verdict with the three evidence sentences, and what was left for the approver. Then, while the worktree still exists, deliver it, record the verdict, and save the Instant Harness draft for the next run of this shape:
 
 ```
-${CLAUDE_PLUGIN_ROOT}/scripts/ccc-verdict.sh <main-checkout> ccc/<task-slug> <verdict> '{"completion":"…","contribution":"…","reuse":"…"}' <report-file>
+${CLAUDE_PLUGIN_ROOT}/scripts/ccc-verdict.sh <main-checkout> ccc/<task-slug> <verdict> '{"completion":"yes: …","contribution":"yes: …","reuse":"no: …"}' <report-file>
 ```
 
 ## 5. Clean Up Worktree

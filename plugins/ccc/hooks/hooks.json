@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/worker-subagent-isolation.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
