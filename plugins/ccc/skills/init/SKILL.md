@@ -37,8 +37,8 @@ Decide the approver now (see `APPROVAL.md`): `hc:<terminal>` with the sender's t
 ## 2. Inventory Components & Check Conflicts
 
 Build a single flat view of all candidate Components across every layer:
-1. Read `~/.claude/settings.json` (`enabledPlugins`, `skillOverrides`, `hooks`) and `<ccc-repo>/.claude-plugin/marketplace.json` to see which Plugins are globally enabled vs available.
-2. Scan `~/.claude/plugins/cache/` for each candidate Plugin's Components (`skills/`, `agents/`, `hooks/`, `workflows/`, `mcp.json`, `lspServers`) — extract **only** names and frontmatter `description`s, not full bodies.
+1. Run `${CLAUDE_PLUGIN_ROOT}/scripts/ccc-inventory.sh`. It lists every Plugin in the `ccc` marketplace, installed or not, with each skill, agent, command, workflow, hook, MCP, and LSP and its description, and whether it is on globally. A Plugin marked `mod` changes the Claude Code interface only; leave it out of Harness choices.
+2. Add the project's own Components (step 1) and global ones from `~/.claude/settings.json` (`skillOverrides`, `hooks`) and `~/.claude/{skills,agents,workflows}/`.
 3. Read `<ccc-repo>/CONFLICTS.md` and check for known overlaps among the active layers.
 
 **Done when**: Every active and candidate Component (skill, agent, workflow, hook, MCP/LSP) across global, project, and Plugin layers is listed with its name and role, and conflicts are flagged.

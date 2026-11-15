@@ -75,6 +75,69 @@
         "repo": "obra/superpowers"
       },
       "homepage": "https://github.com/obra/superpowers"
+    },
+    {
+      "name": "effortless",
+      "description": "Mod that picks the reasoning effort for every prompt automatically and shows a prompt-cache countdown",
+      "category": "productivity",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/HeyCubit/effortless.git",
+        "ref": "stable"
+      },
+      "homepage": "https://github.com/HeyCubit/effortless"
+    },
+    {
+      "name": "prismantis",
+      "description": "Mod that renders Claude's replies in color: tables, headings, code, numbers, paths, links, mermaid diagrams",
+      "category": "productivity",
+      "source": {
+        "source": "archive",
+        "url": "https://github.com/NahumLitvin/prismantis/releases/download/v0.46.0/prismantis-plugin.zip",
+        "sha256": "57c48e8460479e4f2489677a064133bfc6810d023c5ed5e4b1d326ab1086c466"
+      },
+      "homepage": "https://github.com/NahumLitvin/prismantis"
+    },
+    {
+      "name": "diagram-design",
+      "description": "Branded architecture, flowchart, sequence, ER, timeline and other diagrams as single-file SVG/HTML, with import and export commands",
+      "category": "design",
+      "source": {
+        "source": "github",
+        "repo": "cathrynlavery/diagram-design"
+      },
+      "homepage": "https://github.com/cathrynlavery/diagram-design"
+    },
+    {
+      "name": "andrej-karpathy-skills",
+      "description": "Behavioral guidelines against common LLM coding mistakes: think before coding, simplicity first, surgical changes, verifiable success criteria",
+      "category": "development",
+      "source": {
+        "source": "github",
+        "repo": "multica-ai/andrej-karpathy-skills"
+      },
+      "homepage": "https://github.com/multica-ai/andrej-karpathy-skills"
+    },
+    {
+      "name": "hallmark",
+      "description": "Design skill for new websites and pages that look designed, not generated; lints for AI-looking patterns",
+      "category": "design",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/nutlope/hallmark.git",
+        "path": "skills"
+      },
+      "homepage": "https://github.com/nutlope/hallmark"
+    },
+    {
+      "name": "hyperframes",
+      "description": "Create, edit and render videos from HTML: explainers, title cards, captions, slideshows, registry of motion blocks",
+      "category": "design",
+      "source": {
+        "source": "github",
+        "repo": "heygen-com/hyperframes"
+      },
+      "homepage": "https://github.com/heygen-com/hyperframes"
     }
   ]
 }
