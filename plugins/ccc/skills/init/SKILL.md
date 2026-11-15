@@ -7,13 +7,13 @@ description: Provision a worktree with a Harness or Instant Harness for a Worker
 
 Provision an isolated git worktree for a task, install a matching Harness (or assemble an Instant Harness), enforce Component precedence, and verify with a real `hc` Worker Smoke Check.
 
-The Worker runs only inside a fresh `ccc/<task-slug>` worktree that holds a Harness and has passed Smoke Check. Every step below is required, in order. The run is finished when this prints `ALL GATES PASS`:
+The Worker runs only inside a fresh `ccc/<task-slug>` worktree that holds a Harness and has passed Smoke Check. Steps 1-6 are required, in order. The task Worker is started only by this script, which runs the init gates first and refuses on any `FAIL`:
 
 ```
-${CLAUDE_PLUGIN_ROOT}/scripts/ccc-gate.sh init <worktree>
+${CLAUDE_PLUGIN_ROOT}/scripts/ccc-handoff.sh <worktree> <task-slug> "<task>"
 ```
 
-Paste its output in your report, then hand off (step 7). On `FAIL`, fix what the line names and run it again. When the main checkout has uncommitted changes, stop and ask the approver.
+To check progress before that, run `${CLAUDE_PLUGIN_ROOT}/scripts/ccc-gate.sh init <worktree>`. On `FAIL`, fix what the line names and run it again. When the main checkout has uncommitted changes, stop and ask the approver.
 
 Reference, read before step 3: [`COMPONENT-RULES.md`](${CLAUDE_PLUGIN_ROOT}/reference/COMPONENT-RULES.md) for precedence and authoring Components, [`APPROVAL.md`](${CLAUDE_PLUGIN_ROOT}/reference/APPROVAL.md) for who approves and how, [`SMOKE-CHECK.md`](SMOKE-CHECK.md) for step 6.
 
@@ -59,7 +59,7 @@ Build a single flat view of all candidate Components across every layer:
 
 - Branch: `ccc/<task-slug>` (from current HEAD unless user specified a base).
 - Worktree path: `../<project-name>.worktrees/<task-slug>` (sibling to target repo root).
-- Run `git worktree add -b ccc/<task-slug> <worktree-path>`.
+- Run `git worktree add -b ccc/<task-slug> <worktree-path>` and record the starting commit as `base` in `.ccc.json`.
 - Copy required untracked files (e.g., `.env*`) from the main checkout.
 - Install dependencies using the project's package manager.
 - If the project runs a dev server, assign an isolated port (e.g., env var or local config) so parallel worktrees do not collide.
@@ -73,7 +73,7 @@ Build a single flat view of all candidate Components across every layer:
 3. Install task Plugins with `claude plugin install <plugin>@ccc --scope local` from the worktree, then add `skillOverrides`, `env`, and hooks to `<worktree>/.claude/settings.local.json`. Never touch `~/.claude/settings.json` or tracked project settings.
 4. Write `<worktree>/AGENTS.md` containing **only** the active Situation's steps and gates, project facts (paths, commands), explicitly named Components, Worker feedback prompt (1-2 lines on Harness fit), and the Completion section of `<ccc-repo>/harnesses/_template/AGENTS.md` (commit on the branch, then the PR rule).
 5. Ensure `<worktree>/CLAUDE.md` imports `@AGENTS.md` (append `@AGENTS.md` if `CLAUDE.md` exists, or create it).
-6. Record state in `<worktree>/.claude/.ccc.json` (`harness`, `situation`, `approver`, `plugins`, `copiedComponents`, `smokeCheckNotes`, `createdAt`).
+6. Record state in `<worktree>/.claude/.ccc.json` (`harness`, `situation`, `approver`, `base`, `plugins`, `copiedComponents`, `smokeCheckNotes`, `createdAt`).
 7. Add all injected files (`AGENTS.md`, `CLAUDE.md` if newly created, `.claude/settings.local.json`, `.claude/.ccc.json`, `.claude/ccc/`, and copied `.claude/{skills,agents,hooks,workflows}/`) to the git local exclude (`git rev-parse --git-path info/exclude`), wrapped in `# ccc:<branch>` / `# /ccc:<branch>` marker lines. Linked worktrees share this file with the main checkout, so the markers let `/ccc:promote` remove exactly this block. Verify `git status` is clean.
 
 **Done when**: All Harness files are installed in `<worktree>`, `settings.local.json` is valid JSON, and `git status` in `<worktree>` shows no injected files.
@@ -86,4 +86,4 @@ Follow [`SMOKE-CHECK.md`](SMOKE-CHECK.md) using `hc` in `<worktree>`.
 
 ## 7. Hand off to the task Worker
 
-Launch the Worker in the worktree: `hc run --bg --name <task-slug> --cwd <worktree> claude "<task>. Follow AGENTS.md. Report with hc send $HC_TERMINAL_ID when done or stuck."` Wait with `hc wait`. When it reports done, run `/ccc:promote` before removing anything.
+Run `ccc-handoff.sh` (above). It starts the Worker through hc and writes a handoff record that `/ccc:promote` and the cleanup gate read. Then `hc wait <worker>`. When the Worker reports done, run `/ccc:promote`; it ends with the cleanup gate and the report to the approver.

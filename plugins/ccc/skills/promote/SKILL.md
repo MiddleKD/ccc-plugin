@@ -34,7 +34,7 @@ Before scoring, revise the draft from the evidence: add traps the Worker hit and
 
 If the setup does not clear all three, skip promotion proposals and state why, naming what the recipe would need to earn promotion. Still propose `CONFLICTS.md` updates if a real Component conflict was observed.
 
-**Done when**: Clear yes/no verdict with specific evidence from the transcript for each criterion.
+**Done when**: Each criterion has a yes/no with one evidence sentence from the transcript or git state, and the verdict is one of `promoted`, `updated` (an existing Harness), `affinity-only`, or `none`.
 
 ## 3. Propose Separate Actions (Only What Earned It)
 
@@ -65,4 +65,12 @@ Only **after** evaluation and any extraction are complete. The Worker's delivera
 3. Keep branch `ccc/<task-slug>`. Delete it only when the approver says so or `git branch --merged` lists it, using `git branch -d`.
 4. Delete the `# ccc:<branch>` … `# /ccc:<branch>` block from the shared git exclude (`git rev-parse --git-path info/exclude`, run from the main checkout).
 
-**Done when**: `${CLAUDE_PLUGIN_ROOT}/scripts/ccc-gate.sh cleanup <main-checkout> ccc/<task-slug>` prints `ALL GATES PASS`, or the approver chose to keep the worktree. Paste the output in your final report.
+## 5. Record and report
+
+Write the final report to a file: task result with commit hashes, gate outputs, the Harness composition (each Component and why it fit the task, or why `AGENTS.md` alone was enough), the verdict with the three evidence sentences, and what was left for the approver. Then deliver it and record the verdict:
+
+```
+${CLAUDE_PLUGIN_ROOT}/scripts/ccc-verdict.sh <main-checkout> ccc/<task-slug> <verdict> '{"completion":"…","contribution":"…","reuse":"…"}' <report-file>
+```
+
+**Done when**: `${CLAUDE_PLUGIN_ROOT}/scripts/ccc-gate.sh cleanup <main-checkout> ccc/<task-slug>` prints `ALL GATES PASS`, or the approver chose to keep the worktree.

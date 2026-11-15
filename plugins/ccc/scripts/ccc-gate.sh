@@ -93,6 +93,10 @@ init)
   j=$w/.claude/.ccc.json
   if jq -e . "$j" >/dev/null 2>&1; then pass "2 .ccc.json"; else fail "2 .ccc.json" "$j missing or invalid JSON"; fi
 
+  b=$(jq -r '.base // empty' "$j" 2>/dev/null)
+  if [ -n "$b" ] && git -C "$w" cat-file -e "$b^{commit}" 2>/dev/null; then pass "2b base $b"
+  else fail "2b base" ".ccc.json needs 'base': the commit the worktree was created from"; fi
+
   h=$(jq -r '.harness // empty' "$j" 2>/dev/null)
   if [ "$h" = instant ]; then
     if [ -s "$w/.claude/ccc/HARNESS.md" ] && grep -qi 'gate' "$w/.claude/ccc/HARNESS.md"; then
@@ -138,6 +142,15 @@ cleanup)
     else fail "branch $br" "has no commits beyond its base; the Worker's work was not committed"; fi
   elif git -C "$m" branch --merged | grep -q " $br\$"; then pass "branch $br merged"
   else fail "branch $br" "deleted before merge; the deliverable is lost"; fi
+  rec="$(git -C "$m" rev-parse --path-format=absolute --git-common-dir)/ccc/${br//\//_}.json"
+  if [ ! -f "$rec" ]; then
+    fail "handoff record" "$rec missing: the Worker was not started through ccc-handoff.sh"
+  else
+    pass "handoff record"
+    if jq -e '.promote | type == "object" and has("verdict") and has("reportedTo")' "$rec" >/dev/null 2>&1; then
+      pass "promote verdict recorded ($(jq -r .promote.verdict "$rec"))"
+    else fail "promote verdict" "run /ccc:promote; it writes .promote {verdict, criteria, reportedTo} into $rec"; fi
+  fi
   ex=$(git -C "$m" rev-parse --path-format=absolute --git-path info/exclude)
   if grep -qx "# ccc:$br" "$ex"; then fail "exclude block" "remove '# ccc:$br' ... '# /ccc:$br' from $ex"
   else pass "exclude block removed"; fi
