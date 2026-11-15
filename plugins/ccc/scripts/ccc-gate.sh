@@ -20,6 +20,18 @@ frontmatter_field() { # $1 file, $2 field -> value or empty
     NR>1 { if (index($0, f":")==1) { sub("^"f":[ ]*", ""); print; exit } }' "$1"
 }
 
+check_declared() { # $1 = HARNESS.md, $2 = dir holding skills/agents/workflows/hooks
+  local h=$1 d=$2 kind f base
+  [ -f "$h" ] || return
+  for kind in skills agents workflows hooks; do
+    for f in "$d/$kind"/*; do
+      [ -e "$f" ] || continue
+      base=$(basename "$f"); base=${base%.md}; base=${base%.js}
+      grep -q -F "$base" "$h" || fail "$kind/$(basename "$f") undeclared" "installed but not named in $(basename "$h") Components; promote would evaluate a different recipe"
+    done
+  done
+}
+
 check_components() { # $1 = .claude dir
   local c=$1 f n d
   if [ -d "$c/skills" ]; then
@@ -52,6 +64,8 @@ check_components() { # $1 = .claude dir
       elif ! awk '/^export const meta = \{/{m=1} m{print} m&&/^\}/{exit}' "$f" | grep -q -E "^\s*name:\s*['\"]" \
         || ! awk '/^export const meta = \{/{m=1} m{print} m&&/^\}/{exit}' "$f" | grep -q -E "^\s*description:\s*['\"]"; then
         fail "workflow $(basename "$f")" "meta needs literal name and description strings"
+      elif grep -q -E '\bargs\.[A-Za-z_]' "$f" && ! grep -q -E 'typeof args|Array\.isArray\(args|args \?\?|args\?\.' "$f"; then
+        fail "workflow $(basename "$f")" "reads args.<field> without checking it; args is undefined when omitted and can arrive as free text, so check its shape or derive the input itself (e.g. list files with an agent)"
       elif grep -q -E 'Date\.now\(\)|Math\.random\(\)|new Date\(\)' "$f"; then
         fail "workflow $(basename "$f")" "Date.now/Math.random/new Date() throw inside workflows; pass values via args"
       elif command -v node >/dev/null && ! err=$(node "$here/wf-check.mjs" "$f" 2>&1); then
@@ -125,6 +139,7 @@ init)
     fail "4c settings.local.json" "invalid JSON"
   fi
   check_components "$w/.claude"
+  [ "$h" = instant ] && check_declared "$w/.claude/ccc/HARNESS.md" "$w/.claude"
 
   st=$(git -C "$w" status --short --untracked-files=all)
   if [ -z "$st" ]; then pass "5 git status clean"
@@ -190,6 +205,7 @@ harness)
     [ -x "$f" ] && pass "hook $(basename "$f") executable" || fail "hook $(basename "$f")" "not executable"
   done
   check_components "$d"
+  check_declared "$d/HARNESS.md" "$d"
   ;;
 *) sed -n '2,11p' "$0"; exit 2 ;;
 esac
