@@ -127,7 +127,11 @@
         "url": "https://github.com/nutlope/hallmark.git",
         "path": "skills"
       },
-      "homepage": "https://github.com/nutlope/hallmark"
+      "homepage": "https://github.com/nutlope/hallmark",
+      "strict": false,
+      "skills": [
+        "./hallmark"
+      ]
     },
     {
       "name": "hyperframes",

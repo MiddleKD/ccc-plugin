@@ -61,7 +61,7 @@ Build a single flat view of all candidate Components across every layer:
 
 ## 4. Prepare Worktree
 
-- Branch: `ccc/<task-slug>` (from current HEAD unless the approver named a base). Recurring tasks reuse a slug, so when the branch already exists, add a suffix (`-2`, `-3`, or a date) and leave the old branch alone; it holds an earlier Worker's deliverable.
+- Branch: `ccc/<task-slug>`, always created from the main checkout's current HEAD (`git worktree add -b ccc/<task-slug> <path> HEAD`), unless the approver names another base. An earlier `ccc/*` branch is an unmerged deliverable waiting for the approver, never a base: read it for context if useful, but start from HEAD. When the slug is taken, add a suffix (`-2`, `-3`, or a date).
 - Worktree path: `../<project-name>.worktrees/<task-slug>` (sibling to target repo root).
 - Run `git worktree add -b ccc/<task-slug> <worktree-path>` and record the starting commit as `base` in `.ccc.json`.
 - Copy required untracked files (e.g., `.env*`) from the main checkout.
@@ -74,7 +74,7 @@ Build a single flat view of all candidate Components across every layer:
 
 1. **Copy, never symlink** Harness files (`skills/`, `agents/`, `hooks/`, `workflows/`) into `<worktree>/.claude/`. Ensure hook scripts are executable (`chmod +x`).
 2. Apply `COMPONENT-RULES.md` (rename copied skills with `<harness>-` prefix, disable matching global skills, disable partially-copied Plugins, omit duplicate hooks, preserve needed project skills).
-3. Install task Plugins with `claude plugin install <plugin>@ccc --scope local` from the worktree, then add `skillOverrides`, `env`, and hooks to `<worktree>/.claude/settings.local.json`. Never touch `~/.claude/settings.json` or tracked project settings.
+3. Turn on task Plugins with `${CLAUDE_PLUGIN_ROOT}/scripts/ccc-enable.sh <worktree> <plugin> ...` and list them in `.ccc.json` `plugins`. A bare `claude plugin install --scope local` from a linked worktree writes into the main checkout instead. Then add `skillOverrides`, `env`, and hooks to `<worktree>/.claude/settings.local.json`. Never touch `~/.claude/settings.json` or tracked project settings.
 4. Write `<worktree>/AGENTS.md` containing **only** the active Situation's steps and gates, project facts (paths, commands), explicitly named Components, Worker feedback prompt (1-2 lines on Harness fit), and the Working rules and Completion sections of `<ccc-repo>/harnesses/_template/AGENTS.md` (commit on the branch, then the PR rule).
 5. Ensure `<worktree>/CLAUDE.md` imports `@AGENTS.md` (append `@AGENTS.md` if `CLAUDE.md` exists, or create it).
 6. Record state in `<worktree>/.claude/.ccc.json` (`harness`, `harnessName`, `situation`, `approver`, `base`, `plugins`, `copiedComponents`, `smokeCheckNotes`, `createdAt`).

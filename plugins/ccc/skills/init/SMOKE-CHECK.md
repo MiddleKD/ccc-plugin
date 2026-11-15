@@ -15,6 +15,7 @@ Wait for idle prompt, then send the Smoke Check prompt with `hc send` and wait w
 1. **Common check** (always run):
    - List loaded skills, agents, workflows, hooks, and MCP/LSP servers visible to the Worker.
    - Verify expected Components and MCP/LSP tools are present, overridden global skills are hidden, and required binaries (e.g., `pyright-langserver` for `pyright-lsp`) exist.
+   - Ask the Worker to name, from its own skill list, one skill of each Plugin in `.ccc.json` `plugins`, and record the names it reports as `smokeCheckLoaded` (array of `plugin:skill`) in `.ccc.json`. A Plugin the Worker cannot see means install failed; fix it and retry. Your own session cannot answer this, because the Plugins are on only in the worktree.
 2. **Harness-specific task**:
    - For a promoted Harness: run the Smoke Check task defined in its `HARNESS.md`.
    - For an Instant Harness: run a short local verification task chosen during `init` that exercises the selected Plugins/Components together.

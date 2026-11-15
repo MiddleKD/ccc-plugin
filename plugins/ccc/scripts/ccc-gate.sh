@@ -116,7 +116,11 @@ init)
   if jq -e . "$j" >/dev/null 2>&1; then pass "2 .ccc.json"; else fail "2 .ccc.json" "$j missing or invalid JSON"; fi
 
   b=$(jq -r '.base // empty' "$j" 2>/dev/null)
-  if [ -n "$b" ] && git -C "$w" cat-file -e "$b^{commit}" 2>/dev/null; then pass "2b base $b"
+  main_head=$(git -C "$(git -C "$w" rev-parse --path-format=absolute --git-common-dir)/.." rev-parse HEAD 2>/dev/null)
+  if [ -n "$b" ] && git -C "$w" cat-file -e "$b^{commit}" 2>/dev/null && ! git -C "$w" merge-base --is-ancestor "$b" "$main_head" 2>/dev/null \
+     && [ "$(jq -r '.baseApprovedBy // empty' "$j")" = "" ]; then
+    fail "2b base" "base $b is not in the main checkout's history (an earlier ccc/* branch?); recreate the worktree from HEAD, or record baseApprovedBy if the approver chose it"
+  elif [ -n "$b" ] && git -C "$w" cat-file -e "$b^{commit}" 2>/dev/null; then pass "2b base $b"
   else fail "2b base" ".ccc.json needs 'base': the commit the worktree was created from"; fi
 
   h=$(jq -r '.harness // empty' "$j" 2>/dev/null)
@@ -167,6 +171,21 @@ init)
   if grep -qx "# ccc:$br" "$ex" && grep -qx "# /ccc:$br" "$ex"; then pass "5b exclude marker block"
   else fail "5b exclude" "wrap injected paths in '# ccc:$br' ... '# /ccc:$br' in $ex"; fi
 
+  # Every Plugin the Harness relies on must be on in the worktree (not the main
+  # checkout) and must have been seen by the Smoke Check Worker.
+  for pl in $(jq -r '.plugins // [] | .[] | sub("@.*$"; "")' "$j" 2>/dev/null); do
+    on=$(jq -r --arg k "$pl@" '[.enabledPlugins // {} | to_entries[] | select(.value==true and (.key|startswith($k)))] | length' \
+         "$w/.claude/settings.local.json" "$HOME/.claude/settings.json" 2>/dev/null | awk "{s+=\$1} END {print s+0}")
+    if [ "${on:-0}" -eq 0 ]; then fail "6b plugin $pl" "not enabled in $w/.claude/settings.local.json; run ccc-enable.sh $w $pl"
+    elif ! jq -e --arg p "$pl:" '(.smokeCheckLoaded // []) | any(startswith($p))' "$j" >/dev/null 2>&1; then
+      fail "6b plugin $pl" "Smoke Check did not record a $pl skill in smokeCheckLoaded; the Worker may not see it"
+    else pass "6b plugin $pl loaded in Worker"; fi
+  done
+  mainloc="$(cd "$(git -C "$w" rev-parse --path-format=absolute --git-common-dir)/.." && pwd)/.claude/settings.local.json"
+  if [ -f "$mainloc" ] && [ "$(git -C "$(dirname "$(dirname "$mainloc")")" ls-files --error-unmatch .claude/settings.local.json 2>/dev/null)" = "" ] \
+     && jq -e '.enabledPlugins // {} | to_entries | any(.key|endswith("@ccc"))' "$mainloc" >/dev/null 2>&1; then
+    fail "6c main checkout" "$mainloc enables ccc Plugins (a local install leaked there); move them with ccc-enable.sh"
+  fi
   if jq -e '[.smokeCheckNotes] | flatten | map(tostring) | any(test("pass"; "i"))' "$j" >/dev/null 2>&1; then
     pass "6 Smoke Check pass recorded"
   else fail "6 Smoke Check" "record a pass in .ccc.json smokeCheckNotes"; fi
