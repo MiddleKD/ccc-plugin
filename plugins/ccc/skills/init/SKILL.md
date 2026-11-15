@@ -35,10 +35,15 @@ Build a single flat view of all candidate Components across every layer:
 
 - Check `<ccc-repo>/harnesses/*/HARNESS.md` (skip `_template/`) and project memory.
 - If a promoted Harness fits: select it, read its `HARNESS.md`, pick the single **Situation** matching this task, and apply its **Init Decisions**.
-- Otherwise: assemble an **Instant Harness** from available Plugins and Components based on the project scan and task.
+- Otherwise: design an **Instant Harness**. Its value is the *recipe*, not the Plugin list:
+  1. Name the task **shape** in generic words (e.g. "multi-module refactor with type checking"), never the project.
+  2. Write the Situation as ordered steps, each ending on a **gate**: a command whose output proves the step done (tests green, type checker clean, diff limited to named files).
+  3. For each step, pick the Component that does it best, from any layer. Add a Component only when a step needs it: a reviewer agent for a review gate, a Stop or PostToolUse hook to enforce a gate the Worker might skip, an LSP Plugin for type feedback.
+  4. Record the shape's known traps (what a Worker gets wrong on this kind of task) as instructions.
+  Write the result as a full Harness folder draft in `<worktree>/.claude/ccc/` (copy `<ccc-repo>/harnesses/_template/`, fill `HARNESS.md`). The draft is what `/ccc:promote` later generalizes, so write it generic from the start and keep project facts in `AGENTS.md` only.
 - For every overlapping role, choose one winner to name in `AGENTS.md` and apply [`COMPONENT-RULES.md`](COMPONENT-RULES.md).
 
-**Done when**: Harness (promoted or `instant`), active Situation, Plugin list, Component copies, and conflict resolutions are decided.
+**Done when**: Harness (promoted, or `instant` with a filled `.claude/ccc/HARNESS.md` whose every step has a gate), active Situation, Plugin list, Component copies, and conflict resolutions are decided.
 
 ## 4. Prepare Worktree
 
@@ -55,11 +60,11 @@ Build a single flat view of all candidate Components across every layer:
 
 1. **Copy, never symlink** Harness files (`skills/`, `agents/`, `hooks/`, `workflows/`) into `<worktree>/.claude/`. Ensure hook scripts are executable (`chmod +x`).
 2. Apply [`COMPONENT-RULES.md`](COMPONENT-RULES.md) (rename copied skills with `<harness>-` prefix, disable matching global skills, disable partially-copied Plugins, omit duplicate hooks, preserve needed project skills).
-3. Write `<worktree>/.claude/settings.local.json` with `enabledPlugins` and `skillOverrides`. Never touch `~/.claude/settings.json` or tracked project settings.
-4. Write `<worktree>/AGENTS.md` containing **only** the active Situation's instructions, explicitly named Components, Worker feedback prompt (1-2 lines on Harness fit), and PR rule (draft PR by default; ready PR only if user explicitly authorized it at `init`).
+3. Install task Plugins with `claude plugin install <plugin>@ccc --scope local` from the worktree, then add `skillOverrides`, `env`, and hooks to `<worktree>/.claude/settings.local.json`. Never touch `~/.claude/settings.json` or tracked project settings.
+4. Write `<worktree>/AGENTS.md` containing **only** the active Situation's steps and gates, project facts (paths, commands), explicitly named Components, Worker feedback prompt (1-2 lines on Harness fit), and PR rule (draft PR by default; ready PR only if user explicitly authorized it at `init`).
 5. Ensure `<worktree>/CLAUDE.md` imports `@AGENTS.md` (append `@AGENTS.md` if `CLAUDE.md` exists, or create it).
 6. Record state in `<worktree>/.claude/.ccc.json` (`harness`, `situation`, `plugins`, `copiedComponents`, `smokeCheckNotes`, `createdAt`).
-7. Add all injected files (`AGENTS.md`, `CLAUDE.md` if newly created, `.claude/settings.local.json`, `.claude/.ccc.json`, and copied `.claude/{skills,agents,hooks,workflows}/`) to the git local exclude (`git rev-parse --git-path info/exclude`), wrapped in `# ccc:<branch>` / `# /ccc:<branch>` marker lines. Linked worktrees share this file with the main checkout, so the markers let `/ccc:promote` remove exactly this block. Verify `git status` is clean.
+7. Add all injected files (`AGENTS.md`, `CLAUDE.md` if newly created, `.claude/settings.local.json`, `.claude/.ccc.json`, `.claude/ccc/`, and copied `.claude/{skills,agents,hooks,workflows}/`) to the git local exclude (`git rev-parse --git-path info/exclude`), wrapped in `# ccc:<branch>` / `# /ccc:<branch>` marker lines. Linked worktrees share this file with the main checkout, so the markers let `/ccc:promote` remove exactly this block. Verify `git status` is clean.
 
 **Done when**: All Harness files are installed in `<worktree>`, `settings.local.json` is valid JSON, and `git status` in `<worktree>` shows no injected files.
 

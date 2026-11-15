@@ -14,7 +14,7 @@ Resolve `<ccc-repo>` from `~/.claude/plugins/known_marketplaces.json` (`ccc` ent
 ## 1. Gather Evidence (Before Worktree Cleanup)
 
 Inspect the target worktree and Worker session **before** removing the worktree or branch:
-- Read `<worktree>/.claude/.ccc.json` (used Harness or `instant`, situation, copied Components, `smokeCheckNotes`).
+- Read `<worktree>/.claude/.ccc.json` (used Harness or `instant`, situation, copied Components, `smokeCheckNotes`) and the Harness draft in `<worktree>/.claude/ccc/`.
 - Read the Worker's final report (including its 1-2 lines of Harness feedback).
 - Inspect the Worker's session output (`hc read` if still alive) and Claude session transcript under `~/.claude/projects/` for actual tool calls, friction, retries, and hook/skill issues.
 - Check git diff / PR status in `<worktree>` to verify task completion.
@@ -26,9 +26,11 @@ Inspect the target worktree and Worker session **before** removing the worktree 
 Score the run honestly on all three:
 1. **Smooth completion**: Did the Worker finish without setup blockers or repeated retries?
 2. **Harness contribution**: Did the bundled Plugins, skills, agents, hooks, or `AGENTS.md` instructions measurably help?
-3. **Reuse value**: Is this setup general enough to benefit future tasks (either across projects or repeatedly in this project)?
+3. **Reuse value**: Will this task **shape** recur in other projects? Judge the recipe in `.claude/ccc/HARNESS.md` (steps, gates, traps, Component choices), not this instance. A recipe built from generic Plugins is still reusable when its steps and gates are what made the run succeed. A Harness that only names a Plugin and adds nothing a Worker would not do anyway has no reuse value.
 
-If the setup does not clear all three, skip promotion proposals and state why. Still propose `CONFLICTS.md` updates if a real Component conflict was observed.
+Before scoring, revise the draft from the evidence: add traps the Worker hit, gates it skipped or that caught a bug, and drop Components it never used. Score the revised draft.
+
+If the setup does not clear all three, skip promotion proposals and state why, naming what the recipe would need to earn promotion. Still propose `CONFLICTS.md` updates if a real Component conflict was observed.
 
 **Done when**: Clear yes/no verdict with specific evidence from the transcript for each criterion.
 
@@ -37,7 +39,7 @@ If the setup does not clear all three, skip promotion proposals and state why. S
 Keep **Harness promotion** (generic recipe in `ccc-plugin`) strictly separate from **project affinity** (project memory):
 
 - **A. Promote to `ccc-plugin` Harness** (when reusable across projects):
-  - Copy `<ccc-repo>/harnesses/_template/` to `<ccc-repo>/harnesses/<harness-name>/`.
+  - Copy the revised `<worktree>/.claude/ccc/` to `<ccc-repo>/harnesses/<harness-name>/` (name it after the task shape). If a promoted Harness was used, update that Harness instead of creating a new one.
   - Copy any external Components used from Plugins into `<harness-name>/{skills,agents,hooks,workflows}/` so the Harness is self-contained (record provenance in `HARNESS.md`, follow `plugins/ccc/skills/init/COMPONENT-RULES.md`).
   - Strip **all** project-specific details (repo names, paths, library versions, directory ownership).
   - Keep `HARNESS.md` <= 200 lines.
