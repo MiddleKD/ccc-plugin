@@ -45,7 +45,7 @@ Keep **Harness promotion** (generic recipe in `ccc-plugin`) strictly separate fr
   - Copy any external Components used from Plugins into `<harness-name>/{skills,agents,hooks,workflows}/` so the Harness is self-contained (record provenance in `HARNESS.md`, follow `${CLAUDE_PLUGIN_ROOT}/reference/COMPONENT-RULES.md`).
   - Strip **all** project-specific details (repo names, paths, library versions, directory ownership).
   - Keep `HARNESS.md` <= 200 lines.
-  - Run `${CLAUDE_PLUGIN_ROOT}/scripts/ccc-gate.sh harness <ccc-repo>/harnesses/<harness-name>` until it prints `ALL GATES PASS`, and include its output in the approval request.
+  - Run `${CLAUDE_PLUGIN_ROOT}/scripts/ccc-gate.sh harness <ccc-repo>/harnesses/<harness-name> <worktree>` until it prints `ALL GATES PASS`, and include its output in the approval request.
   - Get the approver's yes before committing to `ccc-plugin`.
 
 - **B. Record Project Affinity** (required for every verdict except `none`; `ccc-verdict.sh` checks it):

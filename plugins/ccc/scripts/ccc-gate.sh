@@ -7,7 +7,8 @@
 #
 #   init     <worktree>               run before handing off to the task Worker
 #   cleanup  <main-checkout> <branch> run after /ccc:promote cleanup
-#   harness  <harness-dir>            run on a Harness folder before committing it
+#   harness  <harness-dir> [worktree] run on a Harness folder before committing it;
+#                                     with the source worktree, also checks for its project paths
 set -u
 stage=${1:-}; target=${2:-}; branch_arg=${3:-}
 fails=0
@@ -201,6 +202,14 @@ harness)
     grep -qi 'gate' "$d/HARNESS.md" && pass "HARNESS.md has gates" || fail "HARNESS.md gates" "no step names a gate"
     ph=$(sed 's/`[^`]*`//g' "$d/HARNESS.md" | grep -n -E '<[A-Za-z][^>]*>' | head -3)
     [ -n "$ph" ] && fail "HARNESS.md placeholders" "template text left outside code spans: $ph"
+  fi
+  # Project facts leak in as repo-relative paths. With a source worktree given,
+  # any path from its AGENTS.md that also appears in HARNESS.md is a leak.
+  src=${branch_arg:-}
+  if [ -n "$src" ] && [ -f "$src/AGENTS.md" ] && [ -f "$d/HARNESS.md" ]; then
+    leaks=$(grep -o -E '`[A-Za-z0-9_./*-]+/[A-Za-z0-9_.*-]+`' "$src/AGENTS.md" | sort -u | while read -r tok; do
+      grep -q -F "$tok" "$d/HARNESS.md" && printf '%s ' "$tok"; done)
+    [ -n "$leaks" ] && fail "project paths" "HARNESS.md repeats project paths from AGENTS.md: $leaks- name the role instead and let init fill the path in AGENTS.md"
   fi
   hard=$(grep -rln -E '/home/|/tmp/|/Users/' "$d" 2>/dev/null)
   [ -n "$hard" ] && fail "absolute paths" "project or machine paths in: $hard"
