@@ -59,7 +59,7 @@ Build a single flat view of all candidate Components across every layer:
 4. Write `<worktree>/AGENTS.md` containing **only** the active Situation's instructions, explicitly named Components, Worker feedback prompt (1-2 lines on Harness fit), and PR rule (draft PR by default; ready PR only if user explicitly authorized it at `init`).
 5. Ensure `<worktree>/CLAUDE.md` imports `@AGENTS.md` (append `@AGENTS.md` if `CLAUDE.md` exists, or create it).
 6. Record state in `<worktree>/.claude/.ccc.json` (`harness`, `situation`, `plugins`, `copiedComponents`, `smokeCheckNotes`, `createdAt`).
-7. Add all injected files (`AGENTS.md`, `CLAUDE.md` if newly created, `.claude/settings.local.json`, `.claude/.ccc.json`, and copied `.claude/{skills,agents,hooks,workflows}/`) to `<worktree>`'s git local exclude (`git rev-parse --git-path info/exclude`). Verify `git status` is clean.
+7. Add all injected files (`AGENTS.md`, `CLAUDE.md` if newly created, `.claude/settings.local.json`, `.claude/.ccc.json`, and copied `.claude/{skills,agents,hooks,workflows}/`) to the git local exclude (`git rev-parse --git-path info/exclude`), wrapped in `# ccc:<branch>` / `# /ccc:<branch>` marker lines. Linked worktrees share this file with the main checkout, so the markers let `/ccc:promote` remove exactly this block. Verify `git status` is clean.
 
 **Done when**: All Harness files are installed in `<worktree>`, `settings.local.json` is valid JSON, and `git status` in `<worktree>` shows no injected files.
 

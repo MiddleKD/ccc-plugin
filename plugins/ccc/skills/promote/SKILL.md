@@ -56,5 +56,6 @@ Keep **Harness promotion** (generic recipe in `ccc-plugin`) strictly separate fr
 
 Only **after** evaluation and any extraction are complete:
 - Ask or confirm before removing `<worktree>` (`git worktree remove`) and deleting branch `ccc/<task-slug>` (if merged or no longer needed).
+- Delete the `# ccc:<branch>` … `# /ccc:<branch>` block from the shared git exclude (`git rev-parse --git-path info/exclude`, run from the main checkout).
 
 **Done when**: Evaluation is complete and worktree cleanup is either done or deferred per user choice.
