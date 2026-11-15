@@ -1,0 +1,80 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "ccc",
+  "description": "Personal Claude Code plugin marketplace and harness library for task-specific worker environments",
+  "owner": {
+    "name": "middlek"
+  },
+  "plugins": [
+    {
+      "name": "ccc-harness",
+      "description": "Control Plane skills for initializing task-specific worktree harnesses, running Smoke Checks, and promoting proven setups",
+      "category": "productivity",
+      "source": "./plugins/ccc-harness"
+    },
+    {
+      "name": "mattpocock-skills",
+      "description": "Matt Pocock's agent skills for engineering — grilling, spec/ticket flows, TDD, code review, domain modelling, and writing for agents",
+      "category": "development",
+      "source": {
+        "source": "github",
+        "repo": "mattpocock/skills"
+      },
+      "homepage": "https://github.com/mattpocock/skills"
+    },
+    {
+      "name": "exa",
+      "description": "Exa AI web search, deep research, and content extraction MCP tools and research skills",
+      "category": "productivity",
+      "source": {
+        "source": "github",
+        "repo": "exa-labs/exa-mcp-server"
+      },
+      "homepage": "https://exa.ai/docs/reference/exa-mcp"
+    },
+    {
+      "name": "ponytail",
+      "description": "Forces the simplest, shortest solution that works: YAGNI, stdlib first, no unrequested abstractions",
+      "category": "productivity",
+      "source": {
+        "source": "github",
+        "repo": "DietrichGebert/ponytail"
+      },
+      "homepage": "https://github.com/DietrichGebert/ponytail"
+    },
+    {
+      "name": "pyright-lsp",
+      "description": "Python language server (Pyright) for type checking and code intelligence",
+      "version": "1.0.0",
+      "category": "development",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/anthropics/claude-plugins-official.git",
+        "path": "plugins/pyright-lsp"
+      },
+      "strict": false,
+      "lspServers": {
+        "pyright": {
+          "command": "pyright-langserver",
+          "args": [
+            "--stdio"
+          ],
+          "extensionToLanguage": {
+            ".py": "python",
+            ".pyi": "python"
+          }
+        }
+      }
+    },
+    {
+      "name": "superpowers",
+      "description": "Brainstorming, subagent-driven development, code review, systematic debugging, and red/green TDD",
+      "category": "development",
+      "source": {
+        "source": "github",
+        "repo": "obra/superpowers"
+      },
+      "homepage": "https://github.com/obra/superpowers"
+    }
+  ]
+}
