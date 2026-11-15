@@ -23,4 +23,4 @@ Optional (include only what the Harness needs):
 2. **Frozen snapshot**: Never sync copied Components back to upstream. A Harness stays pinned to its promoted state until explicitly updated.
 3. **Generic only**: Omit project-specific details (repo paths, library versions, directory ownership, test or build commands). Scripts read project commands from env that `/ccc:init` sets in worktree `settings.local.json`, and `HARNESS.md` names those env vars under Init Decisions. Store project-to-Harness affinity in that project's Claude project memory instead.
 4. **Thin `HARNESS.md`**: Keep `HARNESS.md` under 200 lines so Control Plane scans stay fast.
-5. **Precedence-safe**: Apply the Component precedence table in `plugins/ccc/skills/init/COMPONENT-RULES.md` whenever bundling Components.
+5. **Precedence-safe**: Apply the Component precedence table in `plugins/ccc/reference/COMPONENT-RULES.md` whenever bundling Components.

@@ -7,18 +7,15 @@ description: Provision a worktree with a Harness or Instant Harness for a Worker
 
 Provision an isolated git worktree for a task, install a matching Harness (or assemble an Instant Harness), enforce Component precedence, and verify with a real `hc` Worker Smoke Check.
 
-The Worker runs only inside a fresh `ccc/<task-slug>` worktree that holds a Harness and has passed Smoke Check. Every step below is required, in order; the run is finished only when all six exit gates hold:
+The Worker runs only inside a fresh `ccc/<task-slug>` worktree that holds a Harness and has passed Smoke Check. Every step below is required, in order. The run is finished when this prints `ALL GATES PASS`:
 
-1. `git worktree list` shows the new worktree on `ccc/<task-slug>`.
-2. `<worktree>/.claude/.ccc.json` exists.
-3. `<worktree>/.claude/ccc/HARNESS.md` (Instant) or a promoted Harness name is recorded in `.ccc.json`.
-4. `<worktree>/AGENTS.md` exists and `CLAUDE.md` imports it.
-5. `git -C <worktree> status --short` is empty.
-6. `smokeCheckNotes` in `.ccc.json` records a pass.
+```
+${CLAUDE_PLUGIN_ROOT}/scripts/ccc-gate.sh init <worktree>
+```
 
-Launch the task Worker yourself only after reporting these six gates. When the main checkout has uncommitted changes, stop and ask the user.
+Paste its output in your report, then hand off (step 7). On `FAIL`, fix what the line names and run it again. When the main checkout has uncommitted changes, stop and ask the approver.
 
-Read [`COMPONENT-RULES.md`](COMPONENT-RULES.md) and [`SMOKE-CHECK.md`](SMOKE-CHECK.md) before installing or verifying.
+Reference, read before step 3: [`COMPONENT-RULES.md`](${CLAUDE_PLUGIN_ROOT}/reference/COMPONENT-RULES.md) for precedence and authoring Components, [`APPROVAL.md`](${CLAUDE_PLUGIN_ROOT}/reference/APPROVAL.md) for who approves and how, [`SMOKE-CHECK.md`](SMOKE-CHECK.md) for step 6.
 
 ## Locate ccc-plugin
 
@@ -31,7 +28,9 @@ Inspect the target repository before choosing anything:
 - Existing `CLAUDE.md`, `AGENTS.md`, `.claude/skills/`, `.claude/agents/`, `.claude/hooks/`, `.claude/workflows/`, `.claude/settings*.json`.
 - Project memory for this repo (`~/.claude/projects/<encoded-path>/memory/`) for prior Harness recommendations.
 
-**Done when**: Stack, test command, existing project Components, and any project memory Harness affinity are known.
+Decide the approver now (see `APPROVAL.md`): `hc:<terminal>` when this request arrived through hc, `user` when a person typed it here.
+
+**Done when**: Stack, test command, existing project Components, project memory Harness affinity, and the approver are known.
 
 ## 2. Inventory Components & Check Conflicts
 
@@ -49,10 +48,10 @@ Build a single flat view of all candidate Components across every layer:
 - Otherwise: design an **Instant Harness**. Its value is the *recipe*, not the Plugin list:
   1. Name the task **shape** in generic words (e.g. "multi-module refactor with type checking"), never the project.
   2. Write the Situation as ordered steps, each ending on a **gate**: a command whose output proves the step done (tests green, type checker clean, diff limited to named files).
-  3. For each step, pick the Component that does it best, from any layer. Add a Component only when a step needs it: a reviewer agent for a review gate, a Stop or PostToolUse hook to enforce a gate the Worker might skip, an LSP Plugin for type feedback.
+  3. For each step, pick the Component that does it best, from any layer, using the kind table in `COMPONENT-RULES.md` (Choosing a Component kind). Existing Plugin Components come first; author a new skill, agent, workflow, or hook in the draft only when none fits. Write the reason for each one into `HARNESS.md` Components.
   4. Record the shape's known traps (what a Worker gets wrong on this kind of task) as instructions.
   Write the result as a full Harness folder draft in `<worktree>/.claude/ccc/` (copy `<ccc-repo>/harnesses/_template/`, fill `HARNESS.md`). The draft is what `/ccc:promote` later generalizes, so write it generic from the start and keep project facts in `AGENTS.md` only.
-- For every overlapping role, choose one winner to name in `AGENTS.md` and apply [`COMPONENT-RULES.md`](COMPONENT-RULES.md).
+- For every overlapping role, choose one winner to name in `AGENTS.md` and apply `COMPONENT-RULES.md`.
 
 **Done when**: Harness (promoted, or `instant` with a filled `.claude/ccc/HARNESS.md` whose every step has a gate), active Situation, Plugin list, Component copies, and conflict resolutions are decided.
 
@@ -70,11 +69,11 @@ Build a single flat view of all candidate Components across every layer:
 ## 5. Install Harness into Worktree
 
 1. **Copy, never symlink** Harness files (`skills/`, `agents/`, `hooks/`, `workflows/`) into `<worktree>/.claude/`. Ensure hook scripts are executable (`chmod +x`).
-2. Apply [`COMPONENT-RULES.md`](COMPONENT-RULES.md) (rename copied skills with `<harness>-` prefix, disable matching global skills, disable partially-copied Plugins, omit duplicate hooks, preserve needed project skills).
+2. Apply `COMPONENT-RULES.md` (rename copied skills with `<harness>-` prefix, disable matching global skills, disable partially-copied Plugins, omit duplicate hooks, preserve needed project skills).
 3. Install task Plugins with `claude plugin install <plugin>@ccc --scope local` from the worktree, then add `skillOverrides`, `env`, and hooks to `<worktree>/.claude/settings.local.json`. Never touch `~/.claude/settings.json` or tracked project settings.
 4. Write `<worktree>/AGENTS.md` containing **only** the active Situation's steps and gates, project facts (paths, commands), explicitly named Components, Worker feedback prompt (1-2 lines on Harness fit), and the Completion section of `<ccc-repo>/harnesses/_template/AGENTS.md` (commit on the branch, then the PR rule).
 5. Ensure `<worktree>/CLAUDE.md` imports `@AGENTS.md` (append `@AGENTS.md` if `CLAUDE.md` exists, or create it).
-6. Record state in `<worktree>/.claude/.ccc.json` (`harness`, `situation`, `plugins`, `copiedComponents`, `smokeCheckNotes`, `createdAt`).
+6. Record state in `<worktree>/.claude/.ccc.json` (`harness`, `situation`, `approver`, `plugins`, `copiedComponents`, `smokeCheckNotes`, `createdAt`).
 7. Add all injected files (`AGENTS.md`, `CLAUDE.md` if newly created, `.claude/settings.local.json`, `.claude/.ccc.json`, `.claude/ccc/`, and copied `.claude/{skills,agents,hooks,workflows}/`) to the git local exclude (`git rev-parse --git-path info/exclude`), wrapped in `# ccc:<branch>` / `# /ccc:<branch>` marker lines. Linked worktrees share this file with the main checkout, so the markers let `/ccc:promote` remove exactly this block. Verify `git status` is clean.
 
 **Done when**: All Harness files are installed in `<worktree>`, `settings.local.json` is valid JSON, and `git status` in `<worktree>` shows no injected files.
@@ -83,7 +82,7 @@ Build a single flat view of all candidate Components across every layer:
 
 Follow [`SMOKE-CHECK.md`](SMOKE-CHECK.md) using `hc` in `<worktree>`.
 
-**Done when**: Smoke Check passes (or 2 retries are exhausted and the failure report is presented to the user). Report the worktree path, branch, active Harness, Smoke Check outcome, and the six exit gates with the command output that proves each.
+**Done when**: Smoke Check passes and `ccc-gate.sh init <worktree>` prints `ALL GATES PASS` (or 2 retries are exhausted and the failure report goes to the approver). Report the worktree path, branch, active Harness, and the gate output.
 
 ## 7. Hand off to the task Worker
 

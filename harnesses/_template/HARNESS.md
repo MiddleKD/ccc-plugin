@@ -9,11 +9,13 @@ One-line summary of what this Harness equips a Worker to do.
 
 ## Components
 
-- **Enabled Plugins**: `<plugin>@ccc` (reason)
-- **Bundled Components**:
-  - `skills/<harness>-<skill>/` — copied from `<plugin>@<version>` (original skill disabled via `skillOverrides` if global)
-  - `agents/<agent>.md` — copied from `<plugin>@<version>`
-  - `hooks/<hook>` — ...
+Each line: path or name, origin (`authored`, or copied from `<plugin>@<version>`), and which step it serves and why that kind.
+
+- **Enabled Plugins**: `<plugin>@ccc` — <step, reason>
+- **skills/**: `<harness>-<skill>/` — <origin> — <step, reason>
+- **agents/**: `<agent>.md` — <origin> — <step, reason>
+- **workflows/**: `<workflow>.js` — <origin> — <step, reason>
+- **hooks/**: `<hook>` (<event>) — <origin> — <gate it enforces>; env it reads: `<VAR>`
 
 ## Situations
 

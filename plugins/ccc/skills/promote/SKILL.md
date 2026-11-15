@@ -11,6 +11,8 @@ Evaluate a Worker's run **before** cleaning up its worktree, and when warranted,
 
 Resolve `<ccc-repo>` from `~/.claude/plugins/known_marketplaces.json` (`ccc` entry).
 
+Every commit to `<ccc-repo>` and every branch deletion goes to the `approver` recorded in `.ccc.json`, the way [`APPROVAL.md`](${CLAUDE_PLUGIN_ROOT}/reference/APPROVAL.md) describes. With `hc:<terminal>`, ask through `hc send`; a dialog in this session blocks forever.
+
 ## 1. Gather Evidence (Before Worktree Cleanup)
 
 Inspect the target worktree and Worker session **before** removing the worktree or branch:
@@ -40,26 +42,27 @@ Keep **Harness promotion** (generic recipe in `ccc-plugin`) strictly separate fr
 
 - **A. Promote to `ccc-plugin` Harness** (when reusable across projects):
   - Copy the revised `<worktree>/.claude/ccc/` to `<ccc-repo>/harnesses/<harness-name>/` (name it after the task shape). If a promoted Harness was used, update that Harness instead of creating a new one: merge, keeping every earlier step, gate, and trap unless this run's evidence shows it wrong, and mark language- or stack-specific lines with their stack.
-  - Copy any external Components used from Plugins into `<harness-name>/{skills,agents,hooks,workflows}/` so the Harness is self-contained (record provenance in `HARNESS.md`, follow `plugins/ccc/skills/init/COMPONENT-RULES.md`).
+  - Copy any external Components used from Plugins into `<harness-name>/{skills,agents,hooks,workflows}/` so the Harness is self-contained (record provenance in `HARNESS.md`, follow `${CLAUDE_PLUGIN_ROOT}/reference/COMPONENT-RULES.md`).
   - Strip **all** project-specific details (repo names, paths, library versions, directory ownership).
   - Keep `HARNESS.md` <= 200 lines.
-  - Ask user confirmation before committing to `ccc-plugin`.
+  - Run `${CLAUDE_PLUGIN_ROOT}/scripts/ccc-gate.sh harness <ccc-repo>/harnesses/<harness-name>` until it prints `ALL GATES PASS`, and include its output in the approval request.
+  - Get the approver's yes before committing to `ccc-plugin`.
 
 - **B. Record Project Affinity** (when this Harness fits this project):
   - Save or update a `project` memory file in the **target project's** Claude project memory directory (`~/.claude/projects/<encoded-project-path>/memory/`), noting which Harness (and Situation) works well for which task types in that repo.
   - Never write project affinity into `<ccc-repo>/harnesses/` or into the target repo's tracked files.
 
 - **C. Update `CONFLICTS.md`** (when a new Component conflict or precedence lesson occurred):
-  - Append a concise entry to `<ccc-repo>/CONFLICTS.md` following its format, and ask user confirmation before committing.
+  - Append a concise entry to `<ccc-repo>/CONFLICTS.md` following its format, and get the approver's yes before committing.
 
-**Done when**: Proposed actions are executed (with user confirmation for commits) or explicitly declined.
+**Done when**: Proposed actions are executed (commits approved per `APPROVAL.md`) or explicitly declined.
 
 ## 4. Clean Up Worktree
 
 Only **after** evaluation and any extraction are complete. The Worker's deliverable is the branch, so cleanup removes the worktree and keeps the branch:
-1. Confirm the Worker's work is committed on `ccc/<task-slug>`: `git -C <worktree> status --short` lists nothing outside the Harness files. If it lists anything else, stop and ask the user.
-2. Remove the worktree with plain `git worktree remove <worktree>`. When it refuses, report why and stop; `--force` is for the user to choose.
-3. Keep branch `ccc/<task-slug>`. Delete it only when the user asks or `git branch --merged` lists it, using `git branch -d`.
+1. Confirm the Worker's work is committed on `ccc/<task-slug>`: `git -C <worktree> status --short` lists nothing outside the Harness files. If it lists anything else, stop and ask the approver.
+2. Remove the worktree with plain `git worktree remove <worktree>`. When it refuses, report why and stop; `--force` needs the approver.
+3. Keep branch `ccc/<task-slug>`. Delete it only when the approver says so or `git branch --merged` lists it, using `git branch -d`.
 4. Delete the `# ccc:<branch>` … `# /ccc:<branch>` block from the shared git exclude (`git rev-parse --git-path info/exclude`, run from the main checkout).
 
-**Done when**: Evaluation is complete, the worktree is removed or kept per the user, and `git log ccc/<task-slug>` still shows the Worker's commits.
+**Done when**: `${CLAUDE_PLUGIN_ROOT}/scripts/ccc-gate.sh cleanup <main-checkout> ccc/<task-slug>` prints `ALL GATES PASS`, or the approver chose to keep the worktree. Paste the output in your final report.
