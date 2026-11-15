@@ -132,16 +132,6 @@
       "skills": [
         "./hallmark"
       ]
-    },
-    {
-      "name": "hyperframes",
-      "description": "Create, edit and render videos from HTML: explainers, title cards, captions, slideshows, registry of motion blocks",
-      "category": "design",
-      "source": {
-        "source": "github",
-        "repo": "heygen-com/hyperframes"
-      },
-      "homepage": "https://github.com/heygen-com/hyperframes"
     }
   ]
 }
