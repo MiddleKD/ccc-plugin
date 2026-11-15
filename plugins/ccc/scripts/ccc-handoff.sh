@@ -26,6 +26,11 @@ if [ "${ahead:-0}" -gt 0 ]; then
 fi
 
 reply=${HC_TERMINAL_ID:?run this from the Control Plane hc terminal}
+agent=$(hc get "$reply" 2>/dev/null | jq -r '.status.app // empty')
+if [ "$agent" != claude-code ]; then
+  echo "handoff refused: HC_TERMINAL_ID=$reply is not a Claude Code session ($agent). Run this script from the Control Plane's own Bash tool, unwrapped, so Worker reports come back to the Control Plane."
+  exit 1
+fi
 out=$(hc run --bg --name "$slug" --cwd "$w" claude \
   "$task Follow AGENTS.md. Report with hc send $reply when done or stuck." 2>&1) || { echo "$out"; exit 1; }
 worker=$(echo "$out" | jq -r '.address // empty' 2>/dev/null)

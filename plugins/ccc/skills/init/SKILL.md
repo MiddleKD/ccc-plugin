@@ -89,4 +89,6 @@ Follow [`SMOKE-CHECK.md`](SMOKE-CHECK.md) using `hc` in `<worktree>`.
 
 ## 7. Hand off to the task Worker
 
-Run `ccc-handoff.sh` (above). It starts the Worker through hc and writes a handoff record that `/ccc:promote` and the cleanup gate read. Then `hc wait <worker>`. When the Worker reports done, run `/ccc:promote`; it ends with the cleanup gate and the report to the approver.
+Run `ccc-handoff.sh` (above) directly from your Bash tool; it reads your `$HC_TERMINAL_ID` so the Worker reports back to you, and refuses when run from another terminal. It starts the Worker and writes the handoff record that `/ccc:promote` and the cleanup gate read.
+
+Then stay in this turn and supervise: `hc wait <worker>` in a loop (a timeout is a check-in, not an end), answering the Worker when it asks or is blocked. End your turn only after `/ccc:promote` has finished and the cleanup gate prints `ALL GATES PASS`; nobody else will act on the Worker's report.
