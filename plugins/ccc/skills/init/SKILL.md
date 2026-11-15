@@ -7,6 +7,17 @@ description: Provision a worktree with a Harness or Instant Harness for a Worker
 
 Provision an isolated git worktree for a task, install a matching Harness (or assemble an Instant Harness), enforce Component precedence, and verify with a real `hc` Worker Smoke Check.
 
+The Worker runs only inside a fresh `ccc/<task-slug>` worktree that holds a Harness and has passed Smoke Check. Every step below is required, in order; the run is finished only when all six exit gates hold:
+
+1. `git worktree list` shows the new worktree on `ccc/<task-slug>`.
+2. `<worktree>/.claude/.ccc.json` exists.
+3. `<worktree>/.claude/ccc/HARNESS.md` (Instant) or a promoted Harness name is recorded in `.ccc.json`.
+4. `<worktree>/AGENTS.md` exists and `CLAUDE.md` imports it.
+5. `git -C <worktree> status --short` is empty.
+6. `smokeCheckNotes` in `.ccc.json` records a pass.
+
+Launch the task Worker yourself only after reporting these six gates. When the main checkout has uncommitted changes, stop and ask the user.
+
 Read [`COMPONENT-RULES.md`](COMPONENT-RULES.md) and [`SMOKE-CHECK.md`](SMOKE-CHECK.md) before installing or verifying.
 
 ## Locate ccc-plugin
@@ -72,4 +83,8 @@ Build a single flat view of all candidate Components across every layer:
 
 Follow [`SMOKE-CHECK.md`](SMOKE-CHECK.md) using `hc` in `<worktree>`.
 
-**Done when**: Smoke Check passes (or 2 retries are exhausted and the failure report is presented to the user). Report the worktree path, branch, active Harness, and Smoke Check outcome.
+**Done when**: Smoke Check passes (or 2 retries are exhausted and the failure report is presented to the user). Report the worktree path, branch, active Harness, Smoke Check outcome, and the six exit gates with the command output that proves each.
+
+## 7. Hand off to the task Worker
+
+Launch the Worker in the worktree: `hc run --bg --name <task-slug> --cwd <worktree> claude "<task>. Follow AGENTS.md. Report with hc send $HC_TERMINAL_ID when done or stuck."` Wait with `hc wait`. When it reports done, run `/ccc:promote` before removing anything.
