@@ -28,7 +28,7 @@ Score the run honestly on all three:
 2. **Harness contribution**: Did the bundled Plugins, skills, agents, hooks, or `AGENTS.md` instructions measurably help?
 3. **Reuse value**: Will this task **shape** recur in other projects? Judge the recipe in `.claude/ccc/HARNESS.md` (steps, gates, traps, Component choices), not this instance. A recipe built from generic Plugins is still reusable when its steps and gates are what made the run succeed. A Harness that only names a Plugin and adds nothing a Worker would not do anyway has no reuse value.
 
-Before scoring, revise the draft from the evidence: add traps the Worker hit, gates it skipped or that caught a bug, and drop Components it never used. Score the revised draft.
+Before scoring, revise the draft from the evidence: add traps the Worker hit and gates that caught a bug, and drop Components it never used. When the Worker skipped a gate, enforce it with a Component (a Stop hook that runs the gate command, or a reviewer agent) instead of adding another instruction. Score the revised draft.
 
 If the setup does not clear all three, skip promotion proposals and state why, naming what the recipe would need to earn promotion. Still propose `CONFLICTS.md` updates if a real Component conflict was observed.
 
@@ -39,7 +39,7 @@ If the setup does not clear all three, skip promotion proposals and state why, n
 Keep **Harness promotion** (generic recipe in `ccc-plugin`) strictly separate from **project affinity** (project memory):
 
 - **A. Promote to `ccc-plugin` Harness** (when reusable across projects):
-  - Copy the revised `<worktree>/.claude/ccc/` to `<ccc-repo>/harnesses/<harness-name>/` (name it after the task shape). If a promoted Harness was used, update that Harness instead of creating a new one.
+  - Copy the revised `<worktree>/.claude/ccc/` to `<ccc-repo>/harnesses/<harness-name>/` (name it after the task shape). If a promoted Harness was used, update that Harness instead of creating a new one: merge, keeping every earlier step, gate, and trap unless this run's evidence shows it wrong, and mark language- or stack-specific lines with their stack.
   - Copy any external Components used from Plugins into `<harness-name>/{skills,agents,hooks,workflows}/` so the Harness is self-contained (record provenance in `HARNESS.md`, follow `plugins/ccc/skills/init/COMPONENT-RULES.md`).
   - Strip **all** project-specific details (repo names, paths, library versions, directory ownership).
   - Keep `HARNESS.md` <= 200 lines.
