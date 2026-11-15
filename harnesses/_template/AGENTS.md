@@ -10,6 +10,10 @@
 
 - <Only the Components selected for this run, with exact invocation names.>
 
+## Working rules
+
+- You are already in an isolated worktree. Start subagents without `isolation: worktree`; that option puts their copy under the main checkout and leaves it behind.
+
 ## Completion
 
 - Leave 1-2 lines of Harness feedback in your final report (what helped, what got in the way).

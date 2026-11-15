@@ -20,6 +20,10 @@ Install task Plugins at local scope from inside the worktree: `claude plugin ins
 
 hc and Claude Code sessions inherit a non-interactive PATH, so binaries installed by shell rc files (pnpm, nvm, pyenv) are missing. An LSP Plugin then fails silently with `Executable not found`. When a Plugin needs such a binary, set `env.PATH` in worktree `settings.local.json` to the directory holding it followed by the current PATH.
 
+## Subagents inside a Worker
+
+A subagent started with `isolation: worktree` creates its worktree under the **main checkout's** `.claude/worktrees/`, not the Worker's. When it edits files, the worktree stays behind after the Worker finishes, dirties the main checkout, and fails the cleanup gate. In `AGENTS.md`, tell the Worker to start subagents without `isolation: worktree`; they already run inside the isolated task worktree. An authored agent for a Harness omits the `isolation` field for the same reason.
+
 ## Linked Worktree Fallback Gotcha
 
 When a linked worktree has no `.claude/skills/` directory, Claude Code falls back to loading the main checkout's `.claude/skills/`. Creating `.claude/skills/` inside the worktree disables that fallback. If the target project already has project-level skills that the Worker needs, copy them into the worktree alongside the Harness skills.

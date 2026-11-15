@@ -154,6 +154,10 @@ cleanup)
   ex=$(git -C "$m" rev-parse --path-format=absolute --git-path info/exclude)
   if grep -qx "# ccc:$br" "$ex"; then fail "exclude block" "remove '# ccc:$br' ... '# /ccc:$br' from $ex"
   else pass "exclude block removed"; fi
+  stray=$(git -C "$m" worktree list --porcelain | awk '/^worktree /{print $2}' | grep '/\.claude/worktrees/' || true)
+  if [ -n "$stray" ]; then
+    fail "subagent worktrees" "left by an isolation:worktree subagent: $stray (inspect, then git worktree remove)"
+  fi
   st=$(git -C "$m" status --short)
   if [ -z "$st" ]; then pass "main checkout clean"
   else fail "main checkout" "$(echo "$st" | head -5 | tr '\n' ' ')"; fi
