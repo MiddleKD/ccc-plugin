@@ -28,7 +28,7 @@ Inspect the target worktree and Worker session **before** removing the worktree 
 Score the run honestly on all three:
 1. **Smooth completion**: Did the Worker finish without setup blockers or repeated retries?
 2. **Harness contribution**: Did the bundled Plugins, skills, agents, hooks, or `AGENTS.md` instructions measurably help?
-3. **Reuse value**: Will this task **shape** recur in other projects? Judge the recipe in `.claude/ccc/HARNESS.md` (steps, gates, traps, Component choices), not this instance. A recipe built from generic Plugins is still reusable when its steps and gates are what made the run succeed. A Harness that only names a Plugin and adds nothing a Worker would not do anyway has no reuse value.
+3. **Reuse value**: Will this task **shape** recur? A saved draft whose `.runs` is 2 or more has already recurred in this repo; that is evidence for promotion, not only for affinity. Judge the recipe in `.claude/ccc/HARNESS.md` (steps, gates, traps, Component choices), not this instance. A recipe built from generic Plugins is still reusable when its steps and gates are what made the run succeed. A Harness that only names a Plugin and adds nothing a Worker would not do anyway has no reuse value.
 
 Before scoring, revise the draft from the evidence: add traps the Worker hit and gates that caught a bug, and drop Components it never used. When the Worker skipped a gate, enforce it with a Component (a Stop hook that runs the gate command, or a reviewer agent) instead of adding another instruction. Score the revised draft.
 
@@ -57,20 +57,20 @@ Keep **Harness promotion** (generic recipe in `ccc-plugin`) strictly separate fr
 
 **Done when**: Proposed actions are executed (commits approved per `APPROVAL.md`) or explicitly declined.
 
-## 4. Clean Up Worktree
+## 4. Record and report
 
-Only **after** evaluation and any extraction are complete. The Worker's deliverable is the branch, so cleanup removes the worktree and keeps the branch:
-1. Confirm the Worker's work is committed on `ccc/<task-slug>`: `git -C <worktree> status --short` lists nothing outside the Harness files. If it lists anything else, stop and ask the approver.
-2. Remove the worktree with plain `git worktree remove <worktree>`. When it refuses, report why and stop; `--force` needs the approver.
-3. Keep branch `ccc/<task-slug>`. Delete it only when the approver says so or `git branch --merged` lists it, using `git branch -d`.
-4. Delete the `# ccc:<branch>` … `# /ccc:<branch>` block from the shared git exclude (`git rev-parse --git-path info/exclude`, run from the main checkout).
-
-## 5. Record and report
-
-Write the final report to a file: task result with commit hashes, gate outputs, the Harness composition (each Component and why it fit the task, or why `AGENTS.md` alone was enough), the verdict with the three evidence sentences, and what was left for the approver. Then deliver it and record the verdict:
+Write the final report to a file: task result with commit hashes, gate outputs, the Harness composition (each Component and why it fit the task, or why `AGENTS.md` alone was enough), the verdict with the three evidence sentences, and what was left for the approver. Then, while the worktree still exists, deliver it, record the verdict, and save the Instant Harness draft for the next run of this shape:
 
 ```
 ${CLAUDE_PLUGIN_ROOT}/scripts/ccc-verdict.sh <main-checkout> ccc/<task-slug> <verdict> '{"completion":"…","contribution":"…","reuse":"…"}' <report-file>
 ```
+
+## 5. Clean Up Worktree
+
+Only **after** `ccc-verdict.sh` succeeded. The Worker's deliverable is the branch, so cleanup removes the worktree and keeps the branch:
+1. Confirm the Worker's work is committed on `ccc/<task-slug>`: `git -C <worktree> status --short` lists nothing outside the Harness files. If it lists anything else, stop and ask the approver.
+2. Remove the worktree with plain `git worktree remove <worktree>`. When it refuses, report why and stop; `--force` needs the approver.
+3. Keep branch `ccc/<task-slug>`. Delete it only when the approver says so or `git branch --merged` lists it, using `git branch -d`.
+4. Delete the `# ccc:<branch>` … `# /ccc:<branch>` block from the shared git exclude (`git rev-parse --git-path info/exclude`, run from the main checkout).
 
 **Done when**: `${CLAUDE_PLUGIN_ROOT}/scripts/ccc-gate.sh cleanup <main-checkout> ccc/<task-slug>` prints `ALL GATES PASS`, or the approver chose to keep the worktree.

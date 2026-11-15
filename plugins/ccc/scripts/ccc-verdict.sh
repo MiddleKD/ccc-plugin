@@ -25,6 +25,26 @@ if [ "$verdict" != none ]; then
   fi
 fi
 
+# Keep the Instant Harness draft outside the worktree so the next run of the
+# same task shape starts from it instead of rebuilding the recipe.
+draft_note=""
+if [ "$(jq -r '.ccc.harness // empty' "$rec")" = instant ]; then
+  wt=$(jq -r '.worktree' "$rec")
+  slug=$(jq -r '.ccc.harnessName // empty' "$rec")
+  [ -n "$slug" ] || slug=$(sed -n '1s/^# *\(instant: *\)\{0,1\}//p' "$wt/.claude/ccc/HARNESS.md" 2>/dev/null | tr ' A-Z' '-a-z' | tr -cd 'a-z0-9-')
+  if [ -d "$wt/.claude/ccc" ] && [ -n "$slug" ]; then
+    dd="$(git -C "$m" rev-parse --path-format=absolute --git-common-dir)/ccc/drafts/$slug"
+    mkdir -p "$dd"
+    cp -r "$wt/.claude/ccc/." "$dd/"
+    for k in skills agents workflows hooks; do [ -d "$wt/.claude/$k" ] && mkdir -p "$dd/$k" && cp -r "$wt/.claude/$k/." "$dd/$k/"; done
+    runs=$(( $(cat "$dd/.runs" 2>/dev/null || echo 0) + 1 )); echo $runs > "$dd/.runs"
+    draft_note="draft saved: $dd (run $runs of this shape)"
+  elif [ ! -d "$wt" ]; then
+    echo "worktree $wt is gone: run ccc-verdict.sh before removing the worktree, so the Instant Harness draft is kept"
+    exit 1
+  fi
+fi
+
 approver=$(jq -r '.ccc.approver // empty' "$rec")
 case $approver in
   hc:*) hc send "${approver#hc:}" "$(cat "$report")" >/dev/null || { echo "hc send to $approver failed"; exit 1; } ;;
@@ -36,3 +56,4 @@ tmp=$(mktemp)
 jq --arg v "$verdict" --argjson c "$crit" --arg to "$approver" \
   '.promote = {verdict:$v, criteria:$c, reportedTo:$to}' "$rec" > "$tmp" && mv "$tmp" "$rec"
 echo "verdict $verdict recorded in $rec, report delivered to $approver"
+[ -n "$draft_note" ] && echo "$draft_note"
