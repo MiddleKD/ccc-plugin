@@ -13,4 +13,5 @@
 ## Completion
 
 - Leave 1-2 lines of Harness feedback in your final report (what helped, what got in the way).
-- Open a **draft PR** when done (open a ready PR only if explicitly authorized at `init`).
+- Commit your work on the current `ccc/<task-slug>` branch before reporting done; the branch is your deliverable and an uncommitted worktree is lost at cleanup. Exclude Harness files and generated artifacts.
+- Then open a **draft PR** (a ready PR only if explicitly authorized at `init`). When the user forbade PRs or push, stop at the commit.

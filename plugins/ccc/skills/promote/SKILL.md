@@ -56,8 +56,10 @@ Keep **Harness promotion** (generic recipe in `ccc-plugin`) strictly separate fr
 
 ## 4. Clean Up Worktree
 
-Only **after** evaluation and any extraction are complete:
-- Ask or confirm before removing `<worktree>` (`git worktree remove`) and deleting branch `ccc/<task-slug>` (if merged or no longer needed).
-- Delete the `# ccc:<branch>` … `# /ccc:<branch>` block from the shared git exclude (`git rev-parse --git-path info/exclude`, run from the main checkout).
+Only **after** evaluation and any extraction are complete. The Worker's deliverable is the branch, so cleanup removes the worktree and keeps the branch:
+1. Confirm the Worker's work is committed on `ccc/<task-slug>`: `git -C <worktree> status --short` lists nothing outside the Harness files. If it lists anything else, stop and ask the user.
+2. Remove the worktree with plain `git worktree remove <worktree>`. When it refuses, report why and stop; `--force` is for the user to choose.
+3. Keep branch `ccc/<task-slug>`. Delete it only when the user asks or `git branch --merged` lists it, using `git branch -d`.
+4. Delete the `# ccc:<branch>` … `# /ccc:<branch>` block from the shared git exclude (`git rev-parse --git-path info/exclude`, run from the main checkout).
 
-**Done when**: Evaluation is complete and worktree cleanup is either done or deferred per user choice.
+**Done when**: Evaluation is complete, the worktree is removed or kept per the user, and `git log ccc/<task-slug>` still shows the Worker's commits.
