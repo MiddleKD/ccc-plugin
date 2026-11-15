@@ -69,7 +69,14 @@ check_components() { # $1 = .claude dir
       if [[ $p == /* || $p == ./* ]]; then
         if [ ! -f "$p" ]; then fail "hook $cmd" "script $p does not exist"
         elif [ ! -x "$p" ]; then fail "hook $cmd" "script $p is not executable (chmod +x)"
-        else pass "hook $(basename "$p")"; fi
+        else
+          ev=$(jq -r --arg c "$cmd" '.hooks | to_entries[] | select(any(.value[].hooks[]?; .command == $c)) | .key' "$c/settings.local.json" | head -1)
+          if [[ $ev =~ ^(Stop|SubagentStop|PreToolUse|UserPromptSubmit|TaskCompleted)$ ]] && ! grep -q -E 'exit 2|exit \$\{?[A-Za-z_]*\}?|"decision" *: *"block"' "$p"; then
+            fail "hook $(basename "$p") ($ev)" "never exits 2 or prints {\"decision\":\"block\"}; any other failure exit is non-blocking, so this hook enforces nothing"
+          elif [[ $ev =~ ^(Stop|SubagentStop)$ ]] && ! grep -q 'stop_hook_active' "$p"; then
+            fail "hook $(basename "$p") ($ev)" "must exit 0 when stop_hook_active is true, or it can loop"
+          else pass "hook $(basename "$p")${ev:+ ($ev)}"; fi
+        fi
       fi
     done <<< "$cmds"
     if jq -e '.disableAllHooks == true' "$c/settings.local.json" >/dev/null 2>&1; then
