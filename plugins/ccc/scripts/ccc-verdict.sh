@@ -15,6 +15,16 @@ echo "$crit" | jq -e 'has("completion") and has("contribution") and has("reuse")
 rec="$(git -C "$m" rev-parse --path-format=absolute --git-common-dir)/ccc/${br//\//_}.json"
 [ -f "$rec" ] || { echo "no handoff record at $rec; was the Worker started with ccc-handoff.sh?"; exit 1; }
 
+if [ "$verdict" != none ]; then
+  enc=$(cd "$m" && pwd -P | sed 's#[/.]#-#g')
+  mem=~/.claude/projects/$enc/memory
+  hits=$(grep -l -i -E 'harness' "$mem"/*.md 2>/dev/null | grep -v MEMORY.md | head -1)
+  if [ -z "$hits" ]; then
+    echo "verdict $verdict needs project affinity: write a project memory file under $mem naming the Harness and task shape, then rerun"
+    exit 1
+  fi
+fi
+
 approver=$(jq -r '.ccc.approver // empty' "$rec")
 case $approver in
   hc:*) hc send "${approver#hc:}" "$(cat "$report")" >/dev/null || { echo "hc send to $approver failed"; exit 1; } ;;

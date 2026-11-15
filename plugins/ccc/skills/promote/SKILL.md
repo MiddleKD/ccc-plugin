@@ -48,7 +48,7 @@ Keep **Harness promotion** (generic recipe in `ccc-plugin`) strictly separate fr
   - Run `${CLAUDE_PLUGIN_ROOT}/scripts/ccc-gate.sh harness <ccc-repo>/harnesses/<harness-name>` until it prints `ALL GATES PASS`, and include its output in the approval request.
   - Get the approver's yes before committing to `ccc-plugin`.
 
-- **B. Record Project Affinity** (when this Harness fits this project):
+- **B. Record Project Affinity** (required for every verdict except `none`; `ccc-verdict.sh` checks it):
   - Save or update a `project` memory file in the **target project's** Claude project memory directory (`~/.claude/projects/<encoded-project-path>/memory/`), noting which Harness (and Situation) works well for which task types in that repo.
   - Never write project affinity into `<ccc-repo>/harnesses/` or into the target repo's tracked files.
 
