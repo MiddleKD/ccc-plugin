@@ -1,7 +1,11 @@
 # ccc
 
-Claude에게 일을 맡기면, Claude가 작업용 공간을 따로 만들어 새 Claude(Worker)에게 일을 시키고 끝까지 확인해 줍니다.
-잘 맞았던 작업 환경은 저장해 두었다가 다음에 비슷한 일을 할 때 다시 씁니다.
+Building a cross-plugin dynamic harness for Claude Code, inspired by Dynamic Workflows.
+
+ccc는 **C**laude **C**ode **C**ustom의 약자입니다.
+
+작업마다 여러 Plugin의 skill·agent·hook·workflow를 골라 Harness를 즉석에서 조립하고,
+격리된 worktree의 Worker에게 맡깁니다. 잘 맞은 Harness는 저장해 다음 작업에 다시 씁니다.
 
 ## 준비물
 

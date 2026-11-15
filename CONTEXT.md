@@ -22,7 +22,7 @@ _Avoid_: Preset, template, profile
 
 **Instant Harness**:
 An ephemeral, task-specific environment provisioned on the fly for a single worktree without modifying the target project's tracked configuration.
-_Avoid_: Dynamic harness, temp setup
+_Avoid_: Temp setup
 
 **Smoke Check**:
 A short real task run by a Worker launched through herdr inside a freshly initialized worktree, used to confirm that the harness's plugins and components load and work together.
