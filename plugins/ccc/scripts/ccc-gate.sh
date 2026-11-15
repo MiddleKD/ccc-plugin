@@ -119,7 +119,10 @@ init)
   else fail "2b base" ".ccc.json needs 'base': the commit the worktree was created from"; fi
 
   h=$(jq -r '.harness // empty' "$j" 2>/dev/null)
-  if [ "$h" = instant ]; then
+  repo=$(cd "$here/../../.." && pwd)
+  if [ -n "$h" ] && [ "$h" != instant ] && [ ! -f "$repo/harnesses/$h/HARNESS.md" ]; then
+    fail "3 Harness" "harness '$h' is neither 'instant' nor a folder in $repo/harnesses/ (a saved draft is 'instant' with harnessName)"
+  elif [ "$h" = instant ]; then
     if [ -s "$w/.claude/ccc/HARNESS.md" ] && grep -qi 'gate' "$w/.claude/ccc/HARNESS.md"; then
       pass "3 instant HARNESS.md with gates"
     else fail "3 Harness" "instant Harness needs .claude/ccc/HARNESS.md with gated steps"; fi

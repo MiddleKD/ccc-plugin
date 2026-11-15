@@ -15,6 +15,20 @@ echo "$crit" | jq -e 'has("completion") and has("contribution") and has("reuse")
 rec="$(git -C "$m" rev-parse --path-format=absolute --git-common-dir)/ccc/${br//\//_}.json"
 [ -f "$rec" ] || { echo "no handoff record at $rec; was the Worker started with ccc-handoff.sh?"; exit 1; }
 
+# promoted/updated mean a folder in <ccc-repo>/harnesses/ was written and passes the harness gate.
+here=$(cd "$(dirname "$0")" && pwd); repo=$(cd "$here/../../.." && pwd)
+if [ "$verdict" = promoted ] || [ "$verdict" = updated ]; then
+  name=$(jq -r '.ccc.harness' "$rec"); [ "$name" = instant ] && name=$(jq -r '.ccc.harnessName // empty' "$rec")
+  hd="$repo/harnesses/$name"
+  [ -n "$name" ] && [ -f "$hd/HARNESS.md" ] || { echo "verdict $verdict needs $hd/HARNESS.md: write the generalized Harness there first (a saved draft alone is affinity-only)"; exit 1; }
+  "$here/ccc-gate.sh" harness "$hd" >/dev/null || { echo "verdict $verdict: $hd fails the harness gate; run ccc-gate.sh harness $hd"; exit 1; }
+  since=$(jq -r '.handoffAt // empty' "$rec")
+  [ -n "$since" ] || { echo "handoff record has no handoffAt; cannot tell whether harnesses/$name changed in this run"; exit 1; }
+  if [ -z "$(git -C "$repo" status --porcelain -- "harnesses/$name")" ] && [ -z "$(git -C "$repo" log -1 --since="$since" --format=%h -- "harnesses/$name")" ]; then
+    echo "verdict $verdict but harnesses/$name has no new change; write the update, ask the approver, then commit"; exit 1
+  fi
+fi
+
 if [ "$verdict" != none ]; then
   enc=$(cd "$m" && pwd -P | sed 's#[/.]#-#g')
   mem=~/.claude/projects/$enc/memory

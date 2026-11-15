@@ -34,7 +34,7 @@ mkdir -p "$rec_dir"
 jq -n --arg br "$br" --arg w "$w" --arg worker "$worker" --arg cp "$reply" \
       --arg head "$base" --arg gate "$gate" \
       --slurpfile ccc "$w/.claude/.ccc.json" \
-  '{branch:$br, worktree:$w, worker:$worker, controlPlane:$cp, baseCommit:$head, initGate:$gate, ccc:$ccc[0], promote:null}' > "$rec"
+  --arg at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" '{branch:$br, worktree:$w, worker:$worker, controlPlane:$cp, baseCommit:$head, handoffAt:$at, initGate:$gate, ccc:$ccc[0], promote:null}' > "$rec"
 echo "handoff ok: Worker $worker started on $br"
 echo "record: $rec"
 echo "next: hc wait $worker; when it reports done, run /ccc:promote before removing anything"

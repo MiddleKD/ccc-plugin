@@ -34,7 +34,7 @@ Before scoring, revise the draft from the evidence: add traps the Worker hit and
 
 When all three are yes, the verdict is `promoted` or `updated`; `affinity-only` is for a run where reuse is a no. When a criterion is no, skip promotion and state why, naming what the recipe would need to earn it. Still propose `CONFLICTS.md` updates if a real Component conflict was observed.
 
-**Done when**: Each criterion has a yes/no with one evidence sentence from the transcript or git state, and the verdict is one of `promoted`, `updated` (an existing Harness), `affinity-only`, or `none`.
+**Done when**: Each criterion has a yes/no with one evidence sentence from the transcript or git state, and the verdict is one of `promoted` (new folder in `<ccc-repo>/harnesses/`), `updated` (an existing folder there changed), `affinity-only` (reuse is a no; project memory only), or `none`. A saved draft is not a promoted Harness: improving it is part of every verdict, and `ccc-verdict.sh` saves it.
 
 ## 3. Propose Separate Actions (Only What Earned It)
 
